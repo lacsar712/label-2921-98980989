@@ -43,6 +43,14 @@
           <el-icon><Reading /></el-icon>
           <span>当前借阅</span>
         </el-menu-item>
+        <el-menu-item index="/schedule">
+          <el-icon><Clock /></el-icon>
+          <span>馆员排班</span>
+        </el-menu-item>
+        <el-menu-item index="/shift-swaps">
+          <el-icon><Sort /></el-icon>
+          <span>换班请求</span>
+        </el-menu-item>
         <el-menu-item
           v-if="userStore.isAdmin"
           index="/system-settings"
@@ -118,7 +126,9 @@ import {
   Reading,
   Setting,
   Expand,
-  Fold
+  Fold,
+  Clock,
+  Sort
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -135,6 +145,8 @@ const currentRouteName = computed(() => {
     '/borrowers': '借阅用户',
     '/borrows': '借阅历史',
     '/current-borrows': '当前借阅',
+    '/schedule': '馆员排班',
+    '/shift-swaps': '换班请求',
     '/system-settings': '系统管理'
   };
   return titles[route.path] || '首页';

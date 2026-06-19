@@ -30,3 +30,27 @@ export const categorySchema = z.object({
 export const borrowSchema = z.object({
   bookId: z.number().int(),
 });
+
+export const scheduleSchema = z.object({
+  userId: z.number().int().optional(),
+  date: z.string().min(1),
+  shiftType: z.enum(['MORNING', 'AFTERNOON', 'EVENING']),
+  serviceLocationId: z.number().int(),
+  isLeader: z.boolean().optional(),
+});
+
+export const scheduleBatchSchema = z.object({
+  schedules: z.array(scheduleSchema),
+});
+
+export const serviceLocationSchema = z.object({
+  name: z.string().min(1),
+  type: z.enum(['READING_ROOM', 'SERVICE_DESK']).default('READING_ROOM'),
+});
+
+export const shiftSwapSchema = z.object({
+  targetUserId: z.number().int(),
+  requesterScheduleId: z.number().int(),
+  targetScheduleId: z.number().int(),
+  reason: z.string().min(1),
+});

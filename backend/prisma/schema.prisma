@@ -12,13 +12,73 @@ enum Role {
   LIBRARIAN
 }
 
+enum ShiftType {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+enum SwapStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String
-  role      Role     @default(LIBRARIAN)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              Int               @id @default(autoincrement())
+  username        String            @unique
+  password        String
+  role            Role              @default(LIBRARIAN)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  schedules       Schedule[]
+  requestedSwaps  ShiftSwapRequest[] @relation("RequestedSwaps")
+  targetedSwaps   ShiftSwapRequest[] @relation("TargetedSwaps")
+}
+
+model ServiceLocation {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  type      String     @default("READING_ROOM")
+  schedules Schedule[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Schedule {
+  id               Int             @id @default(autoincrement())
+  userId           Int
+  user             User            @relation(fields: [userId], references: [id])
+  date             DateTime
+  shiftType        ShiftType
+  serviceLocationId Int
+  serviceLocation  ServiceLocation @relation(fields: [serviceLocationId], references: [id])
+  isLeader         Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  requesterSwaps   ShiftSwapRequest[] @relation("RequesterSchedule")
+  targetSwaps      ShiftSwapRequest[] @relation("TargetSchedule")
+
+  @@unique([userId, date, shiftType, serviceLocationId])
+}
+
+model ShiftSwapRequest {
+  id                    Int        @id @default(autoincrement())
+  requesterId           Int
+  requester             User       @relation("RequestedSwaps", fields: [requesterId], references: [id])
+  targetUserId          Int
+  targetUser            User       @relation("TargetedSwaps", fields: [targetUserId], references: [id])
+  requesterScheduleId   Int
+  requesterSchedule     Schedule   @relation("RequesterSchedule", fields: [requesterScheduleId], references: [id])
+  targetScheduleId      Int
+  targetSchedule        Schedule   @relation("TargetSchedule", fields: [targetScheduleId], references: [id])
+  reason                String
+  status                SwapStatus @default(PENDING)
+  reviewedBy            Int?
+  reviewedAt            DateTime?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
 }
 
 model Borrower {

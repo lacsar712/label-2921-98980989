@@ -51,6 +51,16 @@ const router = createRouter({
           name: 'CurrentBorrows',
           component: () => import('../views/CurrentBorrows.vue'),
         },
+        {
+          path: 'schedule',
+          name: 'Schedule',
+          component: () => import('../views/Schedule.vue'),
+        },
+        {
+          path: 'shift-swaps',
+          name: 'ShiftSwaps',
+          component: () => import('../views/ShiftSwaps.vue'),
+        },
 
       ],
     },

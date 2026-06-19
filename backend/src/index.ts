@@ -12,6 +12,9 @@ import userRoutes from './routes/users';
 import borrowerRoutes from './routes/borrowers';
 import statsRoutes from './routes/stats';
 import docsRoutes from './routes/docs';
+import scheduleRoutes from './routes/schedules';
+import serviceLocationRoutes from './routes/service-locations';
+import shiftSwapRoutes from './routes/shift-swaps';
 import logger from './utils/logger';
 import { exec } from 'child_process';
 
@@ -37,6 +40,9 @@ app.use('/users', userRoutes);
 app.use('/borrowers', borrowerRoutes);
 app.use('/stats', statsRoutes);
 app.use('/docs', docsRoutes);
+app.use('/schedules', scheduleRoutes);
+app.use('/service-locations', serviceLocationRoutes);
+app.use('/shift-swaps', shiftSwapRoutes);
 
 // Error Handling
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {

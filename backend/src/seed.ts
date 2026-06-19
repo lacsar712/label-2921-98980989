@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Role } from '@prisma/client';
+import { Role, ShiftType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from './utils/prisma';
 
@@ -28,6 +28,85 @@ async function main() {
         password: librarianPassword,
         role: Role.LIBRARIAN,
       },
+    });
+  }
+
+  const librarian2Exists = await prisma.user.findUnique({ where: { username: 'librarian2' } });
+  if (!librarian2Exists) {
+    const librarian2Password = await bcrypt.hash('123456', 10);
+    await prisma.user.create({
+      data: {
+        username: 'librarian2',
+        password: librarian2Password,
+        role: Role.LIBRARIAN,
+      },
+    });
+  }
+
+  const librarian3Exists = await prisma.user.findUnique({ where: { username: 'librarian3' } });
+  if (!librarian3Exists) {
+    const librarian3Password = await bcrypt.hash('123456', 10);
+    await prisma.user.create({
+      data: {
+        username: 'librarian3',
+        password: librarian3Password,
+        role: Role.LIBRARIAN,
+      },
+    });
+  }
+
+  // Create Service Locations
+  const locations = [
+    { name: '一楼综合阅览室', type: 'READING_ROOM' },
+    { name: '二楼报刊阅览室', type: 'READING_ROOM' },
+    { name: '三楼电子阅览室', type: 'READING_ROOM' },
+    { name: '一楼借还服务台', type: 'SERVICE_DESK' },
+    { name: '二楼参考咨询台', type: 'SERVICE_DESK' },
+  ];
+
+  for (const loc of locations) {
+    const exists = await prisma.serviceLocation.findUnique({ where: { name: loc.name } });
+    if (!exists) {
+      await prisma.serviceLocation.create({ data: loc });
+    }
+  }
+
+  // Create Schedule data for current week
+  const allLibrarians = await prisma.user.findMany({ where: { role: Role.LIBRARIAN } });
+  const allLocations = await prisma.serviceLocation.findMany();
+
+  if (allLibrarians.length > 0 && allLocations.length > 0) {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + diff);
+    monday.setHours(0, 0, 0, 0);
+
+    const shiftTypes: ShiftType[] = [ShiftType.MORNING, ShiftType.AFTERNOON, ShiftType.EVENING];
+
+    const scheduleData = [];
+    for (let d = 0; d < 7; d++) {
+      const scheduleDate = new Date(monday);
+      scheduleDate.setDate(monday.getDate() + d);
+
+      for (const location of allLocations) {
+        for (const shift of shiftTypes) {
+          const librarianIndex = (d + allLocations.indexOf(location) + shiftTypes.indexOf(shift)) % allLibrarians.length;
+          scheduleData.push({
+            userId: allLibrarians[librarianIndex].id,
+            date: scheduleDate,
+            shiftType: shift,
+            serviceLocationId: location.id,
+            isLeader: shift === ShiftType.MORNING && allLocations.indexOf(location) === 0,
+          });
+        }
+      }
+    }
+
+    await prisma.schedule.createMany({
+      data: scheduleData,
+      skipDuplicates: true,
     });
   }
 
