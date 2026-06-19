@@ -63,6 +63,10 @@
           <el-icon><Bell /></el-icon>
           <span>消息中心</span>
         </el-menu-item>
+        <el-menu-item index="/report-center">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>统计报表</span>
+        </el-menu-item>
         <el-menu-item
           v-if="userStore.isAdmin"
           index="/system-settings"
@@ -149,7 +153,8 @@ import {
   Sort,
   MagicStick,
   Monitor,
-  Bell
+  Bell,
+  DataAnalysis
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -171,7 +176,8 @@ const currentRouteName = computed(() => {
     '/recommendations': '智能荐书',
     '/kiosk': '扫码查书',
     '/system-settings': '系统管理',
-    '/messages': '消息中心'
+    '/messages': '消息中心',
+    '/report-center': '统计报表'
   };
   return titles[route.path] || '首页';
 });

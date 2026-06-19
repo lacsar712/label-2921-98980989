@@ -281,3 +281,80 @@ export const TARGET_TYPE_LABELS: Record<TargetType, string> = {
   ALL_LIBRARIANS: '全体馆员',
   ALL_USERS: '全体人员',
 };
+
+export interface MetricDetail {
+  value: number;
+  momChange: number;
+  yoyChange: number;
+}
+
+export interface CoreMetrics {
+  borrowCount: MetricDetail;
+  returnCount: MetricDetail;
+  newBorrowers: MetricDetail;
+  newBooks: MetricDetail;
+  stockChange: MetricDetail;
+}
+
+export interface MonthlyReportData {
+  month: string;
+  coreMetrics: CoreMetrics;
+  activeBorrowerCount: number;
+  totalStock: number;
+  interpretation: string;
+}
+
+export interface CategoryDistribution {
+  name: string;
+  count: number;
+}
+
+export interface CategoryDistributionData {
+  month: string;
+  distribution: CategoryDistribution[];
+}
+
+export interface TopBookItem {
+  id: number;
+  title: string;
+  author: string;
+  category: string;
+  count: number;
+}
+
+export interface TopBooksData {
+  month: string;
+  topBooks: TopBookItem[];
+}
+
+export interface LibrarianVolumeItem {
+  id: number;
+  username: string;
+  shiftCount: number;
+  details: { date: string; shiftType: string; location: string }[];
+}
+
+export interface LibrarianVolumeData {
+  month: string;
+  librarianVolume: LibrarianVolumeItem[];
+}
+
+export interface OverdueTrendItem {
+  date: string;
+  overdueCount: number;
+  estimatedFine: number;
+}
+
+export interface OverdueTrendData {
+  month: string;
+  trend: OverdueTrendItem[];
+  summary: { totalOverdue: number; totalFine: number };
+}
+
+export const METRIC_LABELS: Record<string, string> = {
+  borrowCount: '借阅总量',
+  returnCount: '归还量',
+  newBorrowers: '净增借阅用户',
+  newBooks: '新增图书',
+  stockChange: '库存变动',
+};
