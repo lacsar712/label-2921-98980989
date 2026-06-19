@@ -149,6 +149,8 @@ async function main() {
     '张三', '李四', '王五', '赵六', '钱七', '孙八', '周九', '吴十', 'Robert Smith', 'John Doe', 'Emily White'
   ];
 
+  const bookLocations = ['A区1排', 'A区2排', 'B区1排', 'B区2排', 'C区1排', 'C区2排', 'D区1排', 'D区2排'];
+
   const booksData = [];
   for (let i = 1; i <= 100; i++) {
     const title = `${subjects[i % subjects.length]}${bookTitles[i % bookTitles.length]} Vol.${Math.floor(i / subjects.length) + 1}`;
@@ -162,6 +164,8 @@ async function main() {
       stock: Math.floor(Math.random() * 50) + 1,
       price: parseFloat((Math.random() * 100 + 20).toFixed(2)),
       categoryId: category.id,
+      coverUrl: `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Book%20cover%20design%20for%20${encodeURIComponent(title)}%20minimalist%20modern%20style&image_size=portrait_4_3`,
+      location: bookLocations[i % bookLocations.length],
     });
   }
 

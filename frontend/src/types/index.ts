@@ -11,6 +11,8 @@ export interface Book {
   stock: number;
   price: number;
   description?: string;
+  coverUrl?: string;
+  location?: string;
   categoryId: number;
   category: Category;
   createdAt: string;

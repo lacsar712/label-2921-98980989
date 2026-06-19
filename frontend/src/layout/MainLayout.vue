@@ -55,6 +55,10 @@
           <el-icon><MagicStick /></el-icon>
           <span>智能荐书</span>
         </el-menu-item>
+        <el-menu-item index="/kiosk">
+          <el-icon><Monitor /></el-icon>
+          <span>扫码查书</span>
+        </el-menu-item>
         <el-menu-item
           v-if="userStore.isAdmin"
           index="/system-settings"
@@ -133,7 +137,8 @@ import {
   Fold,
   Clock,
   Sort,
-  MagicStick
+  MagicStick,
+  Monitor
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -153,6 +158,7 @@ const currentRouteName = computed(() => {
     '/schedule': '馆员排班',
     '/shift-swaps': '换班请求',
     '/recommendations': '智能荐书',
+    '/kiosk': '扫码查书',
     '/system-settings': '系统管理'
   };
   return titles[route.path] || '首页';

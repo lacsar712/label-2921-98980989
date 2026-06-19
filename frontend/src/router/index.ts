@@ -11,6 +11,12 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
+      path: '/kiosk',
+      name: 'BookKiosk',
+      component: () => import('../views/BookKiosk.vue'),
+      meta: { public: true },
+    },
+    {
       path: '/',
       component: () => import('../layout/MainLayout.vue'),
       meta: { requiresAuth: true },
@@ -74,7 +80,9 @@ const router = createRouter({
 
 router.beforeEach((to, _, next) => {
   const userStore = useUserStore();
-  if (to.meta.requiresAuth && !userStore.isAuthenticated) {
+  if (to.meta.public) {
+    next();
+  } else if (to.meta.requiresAuth && !userStore.isAuthenticated) {
     next('/login');
   } else if (to.meta.requiresAdmin && !userStore.isAdmin) {
     next('/');

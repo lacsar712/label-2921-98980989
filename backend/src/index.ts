@@ -18,6 +18,7 @@ import shiftSwapRoutes from './routes/shift-swaps';
 import recommendationRoutes from './routes/recommendations';
 import reservationRoutes from './routes/reservations';
 import ratingRoutes from './routes/ratings';
+import kioskRoutes from './routes/kiosk';
 import logger from './utils/logger';
 import { exec } from 'child_process';
 
@@ -49,6 +50,7 @@ app.use('/shift-swaps', shiftSwapRoutes);
 app.use('/recommendations', recommendationRoutes);
 app.use('/reservations', reservationRoutes);
 app.use('/ratings', ratingRoutes);
+app.use('/kiosk', kioskRoutes);
 
 // Error Handling
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {

@@ -19,6 +19,8 @@ export const bookSchema = z.object({
   price: z.number().min(0),
   stock: z.number().int().min(0),
   description: z.string().optional(),
+  coverUrl: z.string().optional(),
+  location: z.string().optional(),
 });
 
 export const bookUpdateSchema = bookSchema.partial().extend({ id: z.number().int().optional() });
