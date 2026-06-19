@@ -105,3 +105,50 @@ export const LOCATION_TYPE_LABELS: Record<LocationType, string> = {
   READING_ROOM: '阅览室',
   SERVICE_DESK: '服务台',
 };
+
+export interface RecommendedBook extends Book {
+  borrowedCount: number;
+  avgRating: number;
+  ratingCount: number;
+  reason: string;
+}
+
+export interface RecommendationResponse {
+  borrower: {
+    id: number;
+    name: string;
+    phone?: string;
+    email?: string;
+  };
+  recommendations: RecommendedBook[];
+  total: number;
+  hasMore: boolean;
+}
+
+export interface Reservation {
+  id: number;
+  bookId: number;
+  book: Book;
+  borrowerId: number;
+  borrower: {
+    id: number;
+    name: string;
+  };
+  status: 'PENDING' | 'FULFILLED' | 'CANCELLED';
+  queuePosition: number;
+  createdAt: string;
+  fulfilledAt?: string;
+}
+
+export interface BookRating {
+  id: number;
+  bookId: number;
+  borrowerId: number;
+  borrower: {
+    id: number;
+    name: string;
+  };
+  rating: number;
+  comment?: string;
+  createdAt: string;
+}

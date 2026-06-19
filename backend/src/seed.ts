@@ -171,37 +171,70 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // Create Borrow Records for the last 7 days
-  console.log('Generating borrow records for the last 7 days...');
-  const allBooks = await prisma.book.findMany({ take: 50 });
+  // Create Borrow Records for the last 60 days (more history for recommendations)
+  console.log('Generating borrow records for the last 60 days...');
+  const allBooks = await prisma.book.findMany();
   const allBorrowers = await prisma.borrower.findMany();
   
   if (allBorrowers.length > 0 && allBooks.length > 0) {
     const borrowRecords = [];
     const now = new Date();
     
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 60; i++) {
       const date = new Date(now);
       date.setDate(now.getDate() - i);
       
-      // Generate 3-8 records per day
-      const dailyCount = Math.floor(Math.random() * 6) + 3;
+      // Generate 2-5 records per day
+      const dailyCount = Math.floor(Math.random() * 4) + 2;
       for (let j = 0; j < dailyCount; j++) {
         const book = allBooks[Math.floor(Math.random() * allBooks.length)];
         const borrower = allBorrowers[Math.floor(Math.random() * allBorrowers.length)];
+        
+        const isReturned = i > 14 || Math.random() > 0.3;
         
         borrowRecords.push({
           bookId: book.id,
           borrowerId: borrower.id,
           borrowDate: date,
-          status: Math.random() > 0.3 ? 'RETURNED' : 'BORROWED',
-          returnDate: Math.random() > 0.3 ? new Date(date.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000) : null,
+          status: isReturned ? 'RETURNED' : 'BORROWED',
+          returnDate: isReturned ? new Date(date.getTime() + Math.random() * 14 * 24 * 60 * 60 * 1000) : null,
         });
       }
     }
     
     await prisma.borrowRecord.createMany({
       data: borrowRecords,
+      skipDuplicates: true,
+    });
+  }
+
+  // Create Book Ratings
+  console.log('Generating book ratings...');
+  const returnedRecords = await prisma.borrowRecord.findMany({
+    where: { status: 'RETURNED' },
+    take: 100,
+  });
+
+  const ratingData = [];
+  const usedCombinations = new Set<string>();
+
+  for (const record of returnedRecords) {
+    const key = `${record.bookId}-${record.borrowerId}`;
+    if (!usedCombinations.has(key) && Math.random() > 0.4) {
+      usedCombinations.add(key);
+      ratingData.push({
+        bookId: record.bookId,
+        borrowerId: record.borrowerId,
+        rating: Math.floor(Math.random() * 3) + 3,
+        comment: Math.random() > 0.5 ? '值得一读的好书' : null,
+      });
+    }
+  }
+
+  if (ratingData.length > 0) {
+    await prisma.bookRating.createMany({
+      data: ratingData,
+      skipDuplicates: true,
     });
   }
 

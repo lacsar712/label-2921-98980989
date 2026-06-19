@@ -61,6 +61,11 @@ const router = createRouter({
           name: 'ShiftSwaps',
           component: () => import('../views/ShiftSwaps.vue'),
         },
+        {
+          path: 'recommendations',
+          name: 'Recommendations',
+          component: () => import('../views/Recommendations.vue'),
+        },
 
       ],
     },

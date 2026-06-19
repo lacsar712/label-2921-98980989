@@ -15,6 +15,9 @@ import docsRoutes from './routes/docs';
 import scheduleRoutes from './routes/schedules';
 import serviceLocationRoutes from './routes/service-locations';
 import shiftSwapRoutes from './routes/shift-swaps';
+import recommendationRoutes from './routes/recommendations';
+import reservationRoutes from './routes/reservations';
+import ratingRoutes from './routes/ratings';
 import logger from './utils/logger';
 import { exec } from 'child_process';
 
@@ -43,6 +46,9 @@ app.use('/docs', docsRoutes);
 app.use('/schedules', scheduleRoutes);
 app.use('/service-locations', serviceLocationRoutes);
 app.use('/shift-swaps', shiftSwapRoutes);
+app.use('/recommendations', recommendationRoutes);
+app.use('/reservations', reservationRoutes);
+app.use('/ratings', ratingRoutes);
 
 // Error Handling
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
