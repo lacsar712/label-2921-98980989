@@ -255,8 +255,10 @@ router.post('/batch', authenticate, authorize([Role.ADMIN]), async (req: AuthReq
 
     for (let i = 0; i < schedules.length; i++) {
       const item = schedules[i];
+      const targetUserId =
+        req.user!.role === 'ADMIN' && item.userId ? item.userId : req.user!.id;
       const scheduleDate = new Date(item.date);
-      const conflicts = await detectConflicts(item.userId, scheduleDate, item.shiftType as ShiftType, item.serviceLocationId);
+      const conflicts = await detectConflicts(targetUserId, scheduleDate, item.shiftType as ShiftType, item.serviceLocationId);
       if (conflicts.length > 0) {
         errors.push({ index: i, conflicts });
         continue;
@@ -265,7 +267,7 @@ router.post('/batch', authenticate, authorize([Role.ADMIN]), async (req: AuthReq
       const schedule = await prisma.schedule.upsert({
         where: {
           userId_date_shiftType_serviceLocationId: {
-            userId: item.userId,
+            userId: targetUserId,
             date: scheduleDate,
             shiftType: item.shiftType as ShiftType,
             serviceLocationId: item.serviceLocationId,
@@ -273,7 +275,7 @@ router.post('/batch', authenticate, authorize([Role.ADMIN]), async (req: AuthReq
         },
         update: { isLeader: item.isLeader ?? false },
         create: {
-          userId: item.userId,
+          userId: targetUserId,
           date: scheduleDate,
           shiftType: item.shiftType as ShiftType,
           serviceLocationId: item.serviceLocationId,

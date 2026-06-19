@@ -155,7 +155,7 @@
                     <el-collapse-item title="审批阶段" name="review">
                       <el-descriptions :column="2" border size="small">
                         <el-descriptions-item label="审批状态">
-                          <el-tag :type="PROC_REQ_STATUS_TYPES[row.status]">
+                          <el-tag :type="PROC_REQ_STATUS_TAGS[row.status]">
                             {{ PROC_REQ_STATUS_LABELS[row.status] }}
                           </el-tag>
                         </el-descriptions-item>
@@ -482,7 +482,7 @@
               align="center"
             >
               <template #default="{ row }">
-                <el-tag :type="PROC_REQ_STATUS_TYPES[row.status]" effect="dark">
+                <el-tag :type="PROC_REQ_STATUS_TAGS[row.status]" effect="dark">
                   {{ PROC_REQ_STATUS_LABELS[row.status] }}
                 </el-tag>
               </template>
@@ -631,7 +631,7 @@ import {
   Edit,
   ShoppingCart,
   Van,
-  Refund,
+  RefreshLeft,
   FolderChecked,
 } from '@element-plus/icons-vue';
 import api from '../api';
@@ -643,7 +643,7 @@ import type {
 } from '../types';
 import {
   PROC_REQ_STATUS_LABELS,
-  PROC_REQ_STATUS_TYPES,
+  PROC_REQ_STATUS_TAGS,
   PROCUREMENT_PRIORITY_LABELS,
   PROCUREMENT_PRIORITY_TAGS,
   PROC_ORDER_STATUS_LABELS,
@@ -941,7 +941,7 @@ const buildTimeline = (row: ProcurementRequest): TimelineEvent[] => {
         title: `退货登记：${record.returnNo}`,
         user: record.operator?.username || '',
         detail: `退货 ${record.totalReturned} 册，退款 ¥${record.totalRefund?.toFixed(2)}`,
-        icon: Refund,
+        icon: RefreshLeft,
         type: 'danger',
       });
     });

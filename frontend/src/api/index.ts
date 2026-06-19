@@ -1,5 +1,25 @@
-import axios from 'axios';
+import axios, { type AxiosRequestConfig } from 'axios';
 import { ElMessage } from 'element-plus';
+
+export interface ApiInstance {
+  get<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
+  post<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<T>;
+  put<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<T>;
+  patch<T = unknown>(
+    url: string,
+    data?: unknown,
+    config?: AxiosRequestConfig
+  ): Promise<T>;
+  delete<T = unknown>(url: string, config?: AxiosRequestConfig): Promise<T>;
+}
 
 const instance = axios.create({
   baseURL: '/api',
@@ -30,4 +50,6 @@ instance.interceptors.response.use(
   }
 );
 
-export default instance;
+const api = instance as unknown as ApiInstance;
+
+export default api;

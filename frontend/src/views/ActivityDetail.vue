@@ -145,7 +145,7 @@
             <el-button
               v-if="userStore.isAdmin || userStore.isLibrarian"
               type="success"
-              :icon="QrCode"
+              :icon="Grid"
               @click="showQrCodeDialog = true"
             >
               签到二维码
@@ -531,13 +531,13 @@
               <el-card shadow="never" class="qr-code-card">
                 <template #header>
                   <div class="card-header">
-                    <el-icon><QrCode /></el-icon>
+                    <el-icon><Grid /></el-icon>
                     <span>签到二维码</span>
                   </div>
                 </template>
                 <div class="qr-wrapper">
                   <div class="qr-code-placeholder">
-                    <el-icon :size="120" color="#409eff"><QrCode /></el-icon>
+                    <el-icon :size="120" color="#409eff"><Grid /></el-icon>
                     <p style="margin-top: 12px; color: #606266; font-size: 14px">
                       扫码签到 URL
                     </p>
@@ -816,7 +816,7 @@
     >
       <div class="dialog-qr-wrapper">
         <div class="dialog-qr-code">
-          <el-icon :size="200" color="#409eff"><QrCode /></el-icon>
+          <el-icon :size="200" color="#409eff"><Grid /></el-icon>
         </div>
         <p style="text-align: center; margin-top: 16px; color: #606266">
           扫描二维码快速签到
@@ -843,7 +843,7 @@ import {
   Edit,
   SwitchButton,
   Share,
-  QrCode,
+  Grid,
   UserFilled,
   Clock,
   CircleCheckFilled,

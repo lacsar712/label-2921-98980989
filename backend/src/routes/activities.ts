@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import prisma from '../utils/prisma';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 import {
   createActivitySchema,
   updateActivitySchema,
@@ -26,18 +26,18 @@ const includeRegistrationsWithBorrower = {
     include: {
       borrower: true,
     },
-    orderBy: { registeredAt: 'asc' },
+    orderBy: { registeredAt: Prisma.SortOrder.asc },
   },
-};
+} satisfies Prisma.ActivityInclude;
 
 const includeFeedbacks = {
   feedbacks: {
     include: {
       borrower: { select: { id: true, name: true } },
     },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: Prisma.SortOrder.desc },
   },
-};
+} satisfies Prisma.ActivityInclude;
 
 const computeRegistrationCounts = (activity: any) => {
   const registrations = activity.registrations || [];

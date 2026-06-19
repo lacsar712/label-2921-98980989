@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Router } from 'express';
 import prisma from '../utils/prisma';
 import { authenticate, AuthRequest } from '../middleware/auth';
@@ -17,17 +18,17 @@ const includeAll = {
   createdBy: { select: { id: true, username: true, role: true } },
   timelines: {
     include: { operator: { select: { id: true, username: true } } },
-    orderBy: { timestamp: 'asc' },
+    orderBy: { timestamp: Prisma.SortOrder.asc },
   },
   extensions: {
     include: { approvedBy: { select: { id: true, username: true } } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: Prisma.SortOrder.desc },
   },
   reminders: {
     include: { operator: { select: { id: true, username: true } } },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: Prisma.SortOrder.desc },
   },
-};
+} satisfies Prisma.InterLibraryLoanInclude;
 
 const computeOverdue = (loan: any) => {
   if (!loan.dueDate || loan.status === 'RETURNED' || loan.status === 'REJECTED') {
@@ -97,7 +98,7 @@ router.get('/:id', authenticate, async (req: AuthRequest, res) => {
 router.post('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const data = interLibraryLoanSchema.parse(req.body);
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     const loanData: any = {
       ...data,
@@ -134,7 +135,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
 router.put('/:id', authenticate, async (req: AuthRequest, res) => {
   try {
     const data = interLibraryLoanUpdateSchema.parse(req.body);
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     const existing = await prisma.interLibraryLoan.findUnique({
       where: { id: Number(req.params.id) },
@@ -194,7 +195,7 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res) => {
 router.post('/:id/status', authenticate, async (req: AuthRequest, res) => {
   try {
     const data = interLibraryLoanStatusUpdateSchema.parse(req.body);
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const loanId = Number(req.params.id);
 
     const existing = await prisma.interLibraryLoan.findUnique({
@@ -251,7 +252,7 @@ router.post('/:id/status', authenticate, async (req: AuthRequest, res) => {
 router.post('/:id/reminders', authenticate, async (req: AuthRequest, res) => {
   try {
     const data = interLibraryLoanReminderSchema.parse(req.body);
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const loanId = Number(req.params.id);
 
     const existing = await prisma.interLibraryLoan.findUnique({
@@ -288,7 +289,7 @@ router.post('/:id/reminders', authenticate, async (req: AuthRequest, res) => {
 router.post('/:id/extensions', authenticate, async (req: AuthRequest, res) => {
   try {
     const data = interLibraryLoanExtensionSchema.parse(req.body);
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const loanId = Number(req.params.id);
 
     const existing = await prisma.interLibraryLoan.findUnique({
@@ -329,7 +330,7 @@ router.post('/:id/extensions', authenticate, async (req: AuthRequest, res) => {
 router.post('/:id/extensions/:extId/review', authenticate, async (req: AuthRequest, res) => {
   try {
     const data = interLibraryLoanExtensionReviewSchema.parse(req.body);
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const loanId = Number(req.params.id);
     const extId = Number(req.params.extId);
 

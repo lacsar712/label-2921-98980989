@@ -115,7 +115,7 @@ router.get('/requests', authenticate, async (req: AuthRequest, res) => {
           { title: { contains: query.keyword } },
           { isbn: { contains: query.keyword } },
           { author: { contains: query.keyword } },
-        ] } },
+        ] } } },
       ];
     }
     if (query.startDate) where.createdAt = { ...where.createdAt, gte: new Date(query.startDate) };
@@ -327,7 +327,7 @@ router.get('/orders', authenticate, async (req: AuthRequest, res) => {
         { items: { some: { OR: [
           { title: { contains: query.keyword } },
           { isbn: { contains: query.keyword } },
-        ] } },
+        ] } } },
       ];
     }
     if (query.startDate) where.createdAt = { ...where.createdAt, gte: new Date(query.startDate) };
@@ -577,7 +577,9 @@ router.post('/stock-in', authenticate, authorize([Role.ADMIN, Role.LIBRARIAN]), 
       const arrivalItems = await tx.arrivalRecordItem.findMany({
         where: { id: { in: payload.arrivalItemIds } },
         include: {
-          orderItem: true,
+          orderItem: {
+            include: { category: true },
+          },
         },
       });
 

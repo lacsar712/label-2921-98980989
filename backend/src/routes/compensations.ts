@@ -14,7 +14,7 @@ router.get('/', authenticate, async (req: AuthRequest, res) => {
   try {
     const filter = compensationFilterSchema.safeParse(req.query);
     if (!filter.success) {
-      return res.status(400).json({ message: 'Invalid filter', errors: filter.error.errors });
+      return res.status(400).json({ message: 'Invalid filter', errors: filter.error.issues });
     }
 
     const { status, lossType, borrowerId, keyword } = filter.data;

@@ -174,6 +174,10 @@ model User {
   stockInArrivals ArrivalRecordItem[] @relation("StockInOperator")
   operatedReturns ReturnRecord[] @relation("ReturnOperator")
   createdActivities Activity[]
+  createdInterLibraryLoans InterLibraryLoan[] @relation("ILLCreator")
+  interLibraryLoanTimelines InterLibraryLoanTimeline[] @relation("ILLTimelineOperator")
+  approvedILLExtensions InterLibraryLoanExtension[] @relation("ILLExtensionApprover")
+  interLibraryLoanReminders InterLibraryLoanReminder[] @relation("ILLReminderOperator")
 }
 
 model Message {
@@ -275,9 +279,11 @@ model Borrower {
 }
 
 model Category {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-  books Book[]
+  id                      Int                      @id @default(autoincrement())
+  name                    String                   @unique
+  books                   Book[]
+  procurementRequestItems ProcurementRequestItem[]
+  procurementOrderItems   ProcurementOrderItem[]
 }
 
 model Book {
@@ -389,7 +395,7 @@ model SeriesVolume {
   id              Int             @id @default(autoincrement())
   seriesId        Int
   series          BookSeries      @relation(fields: [seriesId], references: [id], onDelete: Cascade)
-  bookId          Int?
+  bookId          Int?            @unique
   book            Book?           @relation(fields: [bookId], references: [id], onDelete: SetNull)
   volumeNumber    Int
   isMissing       Boolean         @default(false)
@@ -409,7 +415,7 @@ model PurchaseRequest {
   volumeId       Int
   volume         SeriesVolume   @relation(fields: [volumeId], references: [id], onDelete: Cascade)
   requestedById  Int
-  requestedBy    User           @relation(fields: [requestedById], references: [id])
+  requestedBy    User           @relation("RequestedBy", fields: [requestedById], references: [id])
   status         PurchaseStatus @default(PENDING)
   reason         String?
   estimatedPrice Float?
@@ -442,7 +448,7 @@ model InterLibraryLoan {
   remarks            String?
   rejectionReason    String?
   createdById        Int?
-  createdBy          User?                     @relation(fields: [createdById], references: [id])
+  createdBy          User?                     @relation("ILLCreator", fields: [createdById], references: [id])
   timelines          InterLibraryLoanTimeline[]
   extensions         InterLibraryLoanExtension[]
   reminders          InterLibraryLoanReminder[]
@@ -461,7 +467,7 @@ model InterLibraryLoanTimeline {
   status           InterLibraryLoanStatus?
   action           String
   operatorId       Int?
-  operator         User?                   @relation(fields: [operatorId], references: [id])
+  operator         User?                   @relation("ILLTimelineOperator", fields: [operatorId], references: [id])
   note             String?
   timestamp        DateTime                @default(now())
 
@@ -476,7 +482,7 @@ model InterLibraryLoanExtension {
   newDueDate       DateTime
   reason           String
   approvedById     Int?
-  approvedBy       User?                   @relation(fields: [approvedById], references: [id])
+  approvedBy       User?                   @relation("ILLExtensionApprover", fields: [approvedById], references: [id])
   status           String                  @default("PENDING")
   approvedAt       DateTime?
   createdAt        DateTime                @default(now())
@@ -490,7 +496,7 @@ model InterLibraryLoanReminder {
   loan             InterLibraryLoan        @relation(fields: [loanId], references: [id], onDelete: Cascade)
   content          String
   operatorId       Int?
-  operator         User?                   @relation(fields: [operatorId], references: [id])
+  operator         User?                   @relation("ILLReminderOperator", fields: [operatorId], references: [id])
   createdAt        DateTime                @default(now())
 
   @@index([loanId])

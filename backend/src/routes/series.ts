@@ -79,6 +79,63 @@ router.get('/', async (req, res) => {
   res.json(seriesWithStats);
 });
 
+router.get('/purchase-requests', authenticate, authorize([Role.ADMIN, Role.LIBRARIAN]), async (req, res) => {
+  const { status } = req.query;
+  const requests = await prisma.purchaseRequest.findMany({
+    where: {
+      ...(status ? { status: String(status) as any } : {}),
+    },
+    include: {
+      series: true,
+      volume: {
+        include: { book: true },
+      },
+      requestedBy: {
+        select: { id: true, username: true },
+      },
+      reviewedBy: {
+        select: { id: true, username: true },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json(requests);
+});
+
+router.put('/purchase-requests/:id/review', authenticate, authorize([Role.ADMIN]), async (req, res) => {
+  try {
+    const payload = purchaseRequestReviewSchema.parse(req.body);
+    const userId = (req as any).user.id;
+
+    const updateData: any = {
+      status: payload.status,
+      reviewedById: userId,
+      reviewedAt: new Date(),
+    };
+
+    if (payload.status === 'PURCHASED') {
+      updateData.purchasedAt = new Date();
+    }
+
+    const purchaseRequest = await prisma.purchaseRequest.update({
+      where: { id: Number(req.params.id) },
+      data: updateData,
+    });
+
+    await prisma.seriesVolume.update({
+      where: { id: purchaseRequest.volumeId },
+      data: { purchaseStatus: payload.status },
+    });
+
+    res.json(purchaseRequest);
+  } catch (_error) {
+    res.status(400).json({
+      message: 'Failed to review purchase request',
+      error: (_error as any).message,
+    });
+  }
+});
+
 router.get('/:id', async (req, res) => {
   const series = await prisma.bookSeries.findUnique({
     where: { id: Number(req.params.id) },
@@ -267,63 +324,6 @@ router.post('/:id/volumes/:volumeId/purchase', authenticate, authorize([Role.ADM
   } catch (_error) {
     res.status(400).json({
       message: 'Failed to create purchase request',
-      error: (_error as any).message,
-    });
-  }
-});
-
-router.get('/purchase-requests', authenticate, authorize([Role.ADMIN, Role.LIBRARIAN]), async (req, res) => {
-  const { status } = req.query;
-  const requests = await prisma.purchaseRequest.findMany({
-    where: {
-      ...(status ? { status: String(status) as any } : {}),
-    },
-    include: {
-      series: true,
-      volume: {
-        include: { book: true },
-      },
-      requestedBy: {
-        select: { id: true, username: true },
-      },
-      reviewedBy: {
-        select: { id: true, username: true },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-  res.json(requests);
-});
-
-router.put('/purchase-requests/:id/review', authenticate, authorize([Role.ADMIN]), async (req, res) => {
-  try {
-    const payload = purchaseRequestReviewSchema.parse(req.body);
-    const userId = (req as any).user.id;
-
-    const updateData: any = {
-      status: payload.status,
-      reviewedById: userId,
-      reviewedAt: new Date(),
-    };
-
-    if (payload.status === 'PURCHASED') {
-      updateData.purchasedAt = new Date();
-    }
-
-    const purchaseRequest = await prisma.purchaseRequest.update({
-      where: { id: Number(req.params.id) },
-      data: updateData,
-    });
-
-    await prisma.seriesVolume.update({
-      where: { id: purchaseRequest.volumeId },
-      data: { purchaseStatus: payload.status },
-    });
-
-    res.json(purchaseRequest);
-  } catch (_error) {
-    res.status(400).json({
-      message: 'Failed to review purchase request',
       error: (_error as any).message,
     });
   }

@@ -116,7 +116,7 @@
         </div>
 
         <div class="reason-section">
-          <el-icon :size="16" color="#409eff"><Tips /></el-icon>
+          <el-icon :size="16" color="#409eff"><Opportunity /></el-icon>
           <span class="reason-text">{{ book.reason }}</span>
         </div>
 
@@ -164,7 +164,7 @@ import {
   Box,
   Reading,
   Star,
-  Tips,
+  Opportunity,
   ShoppingCartFull,
   Clock,
 } from '@element-plus/icons-vue';
