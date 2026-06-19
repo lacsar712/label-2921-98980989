@@ -66,6 +66,29 @@ enum PurchaseStatus {
   PURCHASED
 }
 
+enum ProcurementRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PARTIAL_APPROVED
+}
+
+enum ProcurementOrderStatus {
+  CREATED
+  ORDERED
+  PARTIAL_ARRIVED
+  FULLY_ARRIVED
+  CANCELLED
+  COMPLETED
+}
+
+enum ProcurementPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
 enum InterLibraryLoanDirection {
   BORROW_IN
   LEND_OUT
@@ -122,6 +145,12 @@ model User {
   purchaseRequests PurchaseRequest[] @relation("RequestedBy")
   reviewedPurchases PurchaseRequest[] @relation("ReviewedBy")
   handledCompensations Compensation[] @relation("CompensationHandler")
+  procurementRequests ProcurementRequest[] @relation("ProcurementRequester")
+  reviewedProcurements ProcurementRequest[] @relation("ProcurementReviewer")
+  createdProcurementOrders ProcurementOrder[] @relation("ProcurementOrderCreator")
+  operatedArrivals ArrivalRecord[] @relation("ArrivalOperator")
+  stockInArrivals ArrivalRecordItem[] @relation("StockInOperator")
+  operatedReturns ReturnRecord[] @relation("ReturnOperator")
 }
 
 model Message {
@@ -440,4 +469,180 @@ model InterLibraryLoanReminder {
   createdAt        DateTime                @default(now())
 
   @@index([loanId])
+}
+
+model ProcurementRequest {
+  id              Int                       @id @default(autoincrement())
+  requestNo       String                    @unique
+  subject         String
+  reason          String
+  fundSubject     String
+  status          ProcurementRequestStatus  @default(PENDING)
+  requestedById   Int
+  requestedBy     User                      @relation("ProcurementRequester", fields: [requestedById], references: [id])
+  reviewedById    Int?
+  reviewedBy      User?                     @relation("ProcurementReviewer", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  reviewNote      String?
+  items           ProcurementRequestItem[]
+  orders          ProcurementOrder[]
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([status])
+  @@index([requestedById, status])
+}
+
+model ProcurementRequestItem {
+  id              Int                 @id @default(autoincrement())
+  requestId       Int
+  request         ProcurementRequest  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  title           String
+  author          String
+  isbn            String
+  publisher       String
+  requestedQty    Int
+  estimatedPrice  Float
+  priority        ProcurementPriority @default(MEDIUM)
+  approvedQty     Int?
+  adjustedNote    String?
+  categoryId      Int?
+  category        Category?           @relation(fields: [categoryId], references: [id])
+  orderItems      ProcurementOrderItem[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([requestId])
+  @@index([isbn])
+}
+
+model ProcurementOrder {
+  id                Int                     @id @default(autoincrement())
+  orderNo           String                  @unique
+  requestId         Int
+  request           ProcurementRequest      @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  supplier          String
+  contactPerson     String?
+  contactPhone      String?
+  expectedArrival   DateTime?
+  status            ProcurementOrderStatus  @default(CREATED)
+  totalAmount       Float                   @default(0)
+  createdById       Int
+  createdBy         User                    @relation("ProcurementOrderCreator", fields: [createdById], references: [id])
+  orderedAt         DateTime?
+  completedAt       DateTime?
+  items             ProcurementOrderItem[]
+  arrivalRecords    ArrivalRecord[]
+  returnRecords     ReturnRecord[]
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  @@index([status])
+  @@index([requestId])
+  @@index([expectedArrival])
+}
+
+model ProcurementOrderItem {
+  id              Int                 @id @default(autoincrement())
+  orderId         Int
+  order           ProcurementOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  requestItemId   Int
+  requestItem     ProcurementRequestItem @relation(fields: [requestItemId], references: [id])
+  title           String
+  author          String
+  isbn            String
+  publisher       String
+  orderQty        Int
+  unitPrice       Float
+  receivedQty     Int                 @default(0)
+  returnedQty     Int                 @default(0)
+  stockInQty      Int                 @default(0)
+  priority        ProcurementPriority @default(MEDIUM)
+  categoryId      Int?
+  category        Category?           @relation(fields: [categoryId], references: [id])
+  arrivalItems    ArrivalRecordItem[]
+  returnItems     ReturnRecordItem[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([orderId])
+  @@index([isbn])
+}
+
+model ArrivalRecord {
+  id              Int                 @id @default(autoincrement())
+  arrivalNo       String              @unique
+  orderId         Int
+  order           ProcurementOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  arrivalDate     DateTime            @default(now())
+  totalReceived   Int                 @default(0)
+  operatorId      Int
+  operator        User                @relation("ArrivalOperator", fields: [operatorId], references: [id])
+  remark          String?
+  items           ArrivalRecordItem[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([orderId])
+  @@index([arrivalDate])
+}
+
+model ArrivalRecordItem {
+  id              Int                 @id @default(autoincrement())
+  arrivalRecordId Int
+  arrivalRecord   ArrivalRecord       @relation(fields: [arrivalRecordId], references: [id], onDelete: Cascade)
+  orderItemId     Int
+  orderItem       ProcurementOrderItem @relation(fields: [orderItemId], references: [id])
+  title           String
+  isbn            String
+  receivedQty     Int
+  unitPrice       Float
+  remark          String?
+  stockInStatus   Boolean             @default(false)
+  stockInAt       DateTime?
+  stockInById     Int?
+  stockInBy       User?               @relation("StockInOperator", fields: [stockInById], references: [id])
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([arrivalRecordId])
+  @@index([orderItemId])
+}
+
+model ReturnRecord {
+  id              Int                 @id @default(autoincrement())
+  returnNo        String              @unique
+  orderId         Int
+  order           ProcurementOrder    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  returnDate      DateTime            @default(now())
+  totalReturned   Int                 @default(0)
+  totalRefund     Float               @default(0)
+  operatorId      Int
+  operator        User                @relation("ReturnOperator", fields: [operatorId], references: [id])
+  reason          String?
+  items           ReturnRecordItem[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([orderId])
+  @@index([returnDate])
+}
+
+model ReturnRecordItem {
+  id              Int                 @id @default(autoincrement())
+  returnRecordId  Int
+  returnRecord    ReturnRecord        @relation(fields: [returnRecordId], references: [id], onDelete: Cascade)
+  orderItemId     Int
+  orderItem       ProcurementOrderItem @relation(fields: [orderItemId], references: [id])
+  title           String
+  isbn            String
+  returnedQty     Int
+  unitPrice       Float
+  refundAmount    Float
+  reason          String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([returnRecordId])
+  @@index([orderItemId])
 }

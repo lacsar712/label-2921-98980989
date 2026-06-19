@@ -33,7 +33,19 @@
         </el-menu-item>
         <el-menu-item index="/purchase-requests">
           <el-icon><ShoppingCart /></el-icon>
-          <span>采购申请</span>
+          <span>丛书采购</span>
+        </el-menu-item>
+        <el-menu-item index="/procurement-requests">
+          <el-icon><DocumentAdd /></el-icon>
+          <span>新书采购申请</span>
+        </el-menu-item>
+        <el-menu-item index="/procurement-orders">
+          <el-icon><Tickets /></el-icon>
+          <span>采购单管理</span>
+        </el-menu-item>
+        <el-menu-item index="/procurement-ledger">
+          <el-icon><OfficeBuilding /></el-icon>
+          <span>采购台账</span>
         </el-menu-item>
         <el-menu-item index="/categories">
           <el-icon><Collection /></el-icon>
@@ -174,7 +186,10 @@ import {
   List,
   ShoppingCart,
   Connection,
-  Wallet
+  Wallet,
+  DocumentAdd,
+  Tickets,
+  OfficeBuilding
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -188,7 +203,10 @@ const currentRouteName = computed(() => {
     '/': '仪表盘',
     '/books': '图书管理',
     '/series': '丛书系列',
-    '/purchase-requests': '采购申请',
+    '/purchase-requests': '丛书采购',
+    '/procurement-requests': '新书采购申请',
+    '/procurement-orders': '采购单管理',
+    '/procurement-ledger': '采购台账',
     '/categories': '分类管理',
     '/borrowers': '借阅用户',
     '/borrows': '借阅历史',

@@ -238,3 +238,128 @@ export const compensationFilterSchema = z.object({
   borrowerId: z.coerce.number().int().optional(),
   keyword: z.string().optional(),
 });
+
+export const procurementPriorityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']);
+export const procurementRequestStatusEnum = z.enum(['PENDING', 'APPROVED', 'REJECTED', 'PARTIAL_APPROVED']);
+export const procurementOrderStatusEnum = z.enum(['CREATED', 'ORDERED', 'PARTIAL_ARRIVED', 'FULLY_ARRIVED', 'CANCELLED', 'COMPLETED']);
+
+export const procurementRequestItemSchema = z.object({
+  id: z.number().int().optional(),
+  title: z.string().min(1, '书名必填'),
+  author: z.string().min(1, '作者必填'),
+  isbn: z.string().min(1, 'ISBN必填'),
+  publisher: z.string().min(1, '出版社必填'),
+  requestedQty: z.number().int().min(1, '申请册数至少为1'),
+  estimatedPrice: z.number().min(0, '预估单价不能小于0'),
+  priority: procurementPriorityEnum.default('MEDIUM'),
+  categoryId: z.number().int().optional(),
+});
+
+export const createProcurementRequestSchema = z.object({
+  subject: z.string().min(1, '申请主题必填'),
+  reason: z.string().min(1, '申请理由必填'),
+  fundSubject: z.string().min(1, '经费科目必填'),
+  items: z.array(procurementRequestItemSchema).min(1, '至少添加一个书目'),
+});
+
+export const updateProcurementRequestSchema = z.object({
+  subject: z.string().min(1).optional(),
+  reason: z.string().min(1).optional(),
+  fundSubject: z.string().min(1).optional(),
+  items: z.array(procurementRequestItemSchema.extend({ id: z.number().int().optional() })).min(1).optional(),
+});
+
+export const reviewProcurementRequestItemSchema = z.object({
+  id: z.number().int(),
+  approvedQty: z.number().int().min(0),
+  adjustedNote: z.string().optional(),
+  priority: procurementPriorityEnum.optional(),
+});
+
+export const reviewProcurementRequestSchema = z.object({
+  status: z.enum(['APPROVED', 'REJECTED', 'PARTIAL_APPROVED']),
+  reviewNote: z.string().optional(),
+  items: z.array(reviewProcurementRequestItemSchema).optional(),
+});
+
+export const procurementOrderItemSchema = z.object({
+  requestItemId: z.number().int(),
+  title: z.string().min(1),
+  author: z.string().min(1),
+  isbn: z.string().min(1),
+  publisher: z.string().min(1),
+  orderQty: z.number().int().min(1),
+  unitPrice: z.number().min(0),
+  priority: procurementPriorityEnum.default('MEDIUM'),
+  categoryId: z.number().int().optional(),
+});
+
+export const createProcurementOrderSchema = z.object({
+  requestId: z.number().int(),
+  supplier: z.string().min(1, '供应商必填'),
+  contactPerson: z.string().optional(),
+  contactPhone: z.string().optional(),
+  expectedArrival: z.string().optional(),
+  items: z.array(procurementOrderItemSchema).min(1, '至少添加一个采购书目'),
+});
+
+export const updateProcurementOrderSchema = z.object({
+  supplier: z.string().min(1).optional(),
+  contactPerson: z.string().optional(),
+  contactPhone: z.string().optional(),
+  expectedArrival: z.string().optional(),
+  status: procurementOrderStatusEnum.optional(),
+});
+
+export const arrivalRecordItemSchema = z.object({
+  orderItemId: z.number().int(),
+  title: z.string().min(1),
+  isbn: z.string().min(1),
+  receivedQty: z.number().int().min(1, '到货数量至少为1'),
+  unitPrice: z.number().min(0),
+  remark: z.string().optional(),
+});
+
+export const createArrivalRecordSchema = z.object({
+  orderId: z.number().int(),
+  arrivalDate: z.string().optional(),
+  remark: z.string().optional(),
+  items: z.array(arrivalRecordItemSchema).min(1, '至少添加一个到货物料'),
+});
+
+export const returnRecordItemSchema = z.object({
+  orderItemId: z.number().int(),
+  title: z.string().min(1),
+  isbn: z.string().min(1),
+  returnedQty: z.number().int().min(1, '退货数量至少为1'),
+  unitPrice: z.number().min(0),
+  refundAmount: z.number().min(0),
+  reason: z.string().optional(),
+});
+
+export const createReturnRecordSchema = z.object({
+  orderId: z.number().int(),
+  returnDate: z.string().optional(),
+  reason: z.string().optional(),
+  items: z.array(returnRecordItemSchema).min(1, '至少添加一个退货物料'),
+});
+
+export const stockInSchema = z.object({
+  arrivalItemIds: z.array(z.number().int()).min(1, '请选择要入库的到货明细'),
+});
+
+export const procurementRequestFilterSchema = z.object({
+  status: procurementRequestStatusEnum.optional(),
+  keyword: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  requestedById: z.coerce.number().int().optional(),
+});
+
+export const procurementOrderFilterSchema = z.object({
+  status: procurementOrderStatusEnum.optional(),
+  keyword: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  requestId: z.coerce.number().int().optional(),
+});

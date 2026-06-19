@@ -662,3 +662,220 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   OTHER: '其他',
 };
 
+export type ProcurementPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+export type ProcurementRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'PARTIAL_APPROVED';
+export type ProcurementOrderStatus = 'CREATED' | 'ORDERED' | 'PARTIAL_ARRIVED' | 'FULLY_ARRIVED' | 'CANCELLED' | 'COMPLETED';
+
+export const PROCUREMENT_PRIORITY_LABELS: Record<ProcurementPriority, string> = {
+  LOW: '低',
+  MEDIUM: '中',
+  HIGH: '高',
+  URGENT: '紧急',
+};
+
+export const PROCUREMENT_PRIORITY_TAGS: Record<ProcurementPriority, 'info' | 'primary' | 'warning' | 'danger'> = {
+  LOW: 'info',
+  MEDIUM: 'primary',
+  HIGH: 'warning',
+  URGENT: 'danger',
+};
+
+export const PROCUREMENT_PRIORITY_COLORS: Record<ProcurementPriority, string> = {
+  LOW: '#909399',
+  MEDIUM: '#409eff',
+  HIGH: '#e6a23c',
+  URGENT: '#f56c6c',
+};
+
+export const PROC_REQ_STATUS_LABELS: Record<ProcurementRequestStatus, string> = {
+  PENDING: '待审核',
+  APPROVED: '已通过',
+  REJECTED: '已驳回',
+  PARTIAL_APPROVED: '部分通过',
+};
+
+export const PROC_REQ_STATUS_TAGS: Record<ProcurementRequestStatus, 'warning' | 'success' | 'danger' | 'primary'> = {
+  PENDING: 'warning',
+  APPROVED: 'success',
+  REJECTED: 'danger',
+  PARTIAL_APPROVED: 'primary',
+};
+
+export const PROC_ORDER_STATUS_LABELS: Record<ProcurementOrderStatus, string> = {
+  CREATED: '已创建',
+  ORDERED: '已下单',
+  PARTIAL_ARRIVED: '部分到货',
+  FULLY_ARRIVED: '全部到货',
+  CANCELLED: '已取消',
+  COMPLETED: '已完成',
+};
+
+export const PROC_ORDER_STATUS_TAGS: Record<ProcurementOrderStatus, 'info' | 'primary' | 'warning' | 'success' | 'danger' | 'success'> = {
+  CREATED: 'info',
+  ORDERED: 'primary',
+  PARTIAL_ARRIVED: 'warning',
+  FULLY_ARRIVED: 'success',
+  CANCELLED: 'danger',
+  COMPLETED: 'success',
+};
+
+export interface ProcurementRequestItem {
+  id: number;
+  requestId: number;
+  title: string;
+  author: string;
+  isbn: string;
+  publisher: string;
+  requestedQty: number;
+  estimatedPrice: number;
+  priority: ProcurementPriority;
+  approvedQty?: number;
+  adjustedNote?: string;
+  categoryId?: number;
+  category?: Category;
+  orderItems?: ProcurementOrderItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProcurementRequest {
+  id: number;
+  requestNo: string;
+  subject: string;
+  reason: string;
+  fundSubject: string;
+  status: ProcurementRequestStatus;
+  requestedById: number;
+  requestedBy?: { id: number; username: string };
+  reviewedById?: number;
+  reviewedBy?: { id: number; username: string };
+  reviewedAt?: string;
+  reviewNote?: string;
+  items: ProcurementRequestItem[];
+  orders: ProcurementOrder[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProcurementOrderItem {
+  id: number;
+  orderId: number;
+  requestItemId: number;
+  title: string;
+  author: string;
+  isbn: string;
+  publisher: string;
+  orderQty: number;
+  unitPrice: number;
+  receivedQty: number;
+  returnedQty: number;
+  stockInQty: number;
+  priority: ProcurementPriority;
+  categoryId?: number;
+  category?: Category;
+  arrivalItems?: ArrivalRecordItem[];
+  returnItems?: ReturnRecordItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProcurementOrder {
+  id: number;
+  orderNo: string;
+  requestId: number;
+  request?: ProcurementRequest;
+  supplier: string;
+  contactPerson?: string;
+  contactPhone?: string;
+  expectedArrival?: string;
+  status: ProcurementOrderStatus;
+  totalAmount: number;
+  createdById: number;
+  createdBy?: { id: number; username: string };
+  orderedAt?: string;
+  completedAt?: string;
+  items: ProcurementOrderItem[];
+  arrivalRecords: ArrivalRecord[];
+  returnRecords: ReturnRecord[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArrivalRecordItem {
+  id: number;
+  arrivalRecordId: number;
+  orderItemId: number;
+  title: string;
+  isbn: string;
+  receivedQty: number;
+  unitPrice: number;
+  remark?: string;
+  stockInStatus: boolean;
+  stockInAt?: string;
+  stockInById?: number;
+  stockInBy?: { id: number; username: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArrivalRecord {
+  id: number;
+  arrivalNo: string;
+  orderId: number;
+  order?: ProcurementOrder;
+  arrivalDate: string;
+  totalReceived: number;
+  operatorId: number;
+  operator?: { id: number; username: string };
+  remark?: string;
+  items: ArrivalRecordItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReturnRecordItem {
+  id: number;
+  returnRecordId: number;
+  orderItemId: number;
+  title: string;
+  isbn: string;
+  returnedQty: number;
+  unitPrice: number;
+  refundAmount: number;
+  reason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReturnRecord {
+  id: number;
+  returnNo: string;
+  orderId: number;
+  order?: ProcurementOrder;
+  returnDate: string;
+  totalReturned: number;
+  totalRefund: number;
+  operatorId: number;
+  operator?: { id: number; username: string };
+  reason?: string;
+  items: ReturnRecordItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProcurementLedgerStats {
+  totalRequests: number;
+  pendingRequests: number;
+  approvedRequests: number;
+  rejectedRequests: number;
+  totalOrders: number;
+  totalAmount: number;
+  totalItems: number;
+  totalStockIn: number;
+}
+
+export interface ProcurementLedgerResponse {
+  requests: ProcurementRequest[];
+  stats: ProcurementLedgerStats;
+}
+

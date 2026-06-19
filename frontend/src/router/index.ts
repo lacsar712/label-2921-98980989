@@ -112,6 +112,21 @@ const router = createRouter({
           name: 'Compensations',
           component: () => import('../views/Compensations.vue'),
         },
+        {
+          path: 'procurement-requests',
+          name: 'ProcurementRequests',
+          component: () => import('../views/ProcurementRequests.vue'),
+        },
+        {
+          path: 'procurement-orders',
+          name: 'ProcurementOrders',
+          component: () => import('../views/ProcurementOrders.vue'),
+        },
+        {
+          path: 'procurement-ledger',
+          name: 'ProcurementLedger',
+          component: () => import('../views/ProcurementLedger.vue'),
+        },
 
       ],
     },
