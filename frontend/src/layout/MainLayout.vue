@@ -91,6 +91,14 @@
           <el-icon><Bell /></el-icon>
           <span>消息中心</span>
         </el-menu-item>
+        <el-menu-item index="/reading-activities">
+          <el-icon><Flag /></el-icon>
+          <span>读书活动</span>
+        </el-menu-item>
+        <el-menu-item index="/my-activities">
+          <el-icon><Medal /></el-icon>
+          <span>我的活动</span>
+        </el-menu-item>
         <el-menu-item index="/report-center">
           <el-icon><DataAnalysis /></el-icon>
           <span>统计报表</span>
@@ -189,7 +197,9 @@ import {
   Wallet,
   DocumentAdd,
   Tickets,
-  OfficeBuilding
+  OfficeBuilding,
+  Flag,
+  Medal
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -219,7 +229,9 @@ const currentRouteName = computed(() => {
     '/system-settings': '系统管理',
     '/messages': '消息中心',
     '/report-center': '统计报表',
-    '/interlibrary-loans': '馆际互借'
+    '/interlibrary-loans': '馆际互借',
+    '/reading-activities': '读书活动',
+    '/my-activities': '我的活动'
   };
   return titles[route.path] || '首页';
 });

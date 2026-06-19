@@ -24,6 +24,7 @@ import seriesRoutes from './routes/series';
 import interLibraryLoanRoutes from './routes/interlibrary-loans';
 import compensationRoutes from './routes/compensations';
 import procurementRoutes from './routes/procurements';
+import activityRoutes from './routes/activities';
 import logger from './utils/logger';
 import { exec } from 'child_process';
 
@@ -61,6 +62,7 @@ app.use('/series', seriesRoutes);
 app.use('/interlibrary-loans', interLibraryLoanRoutes);
 app.use('/compensations', compensationRoutes);
 app.use('/procurements', procurementRoutes);
+app.use('/activities', activityRoutes);
 
 // Error Handling
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {

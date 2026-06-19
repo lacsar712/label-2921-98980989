@@ -363,3 +363,69 @@ export const procurementOrderFilterSchema = z.object({
   endDate: z.string().optional(),
   requestId: z.coerce.number().int().optional(),
 });
+
+export const activityTypeEnum = z.enum(['LECTURE', 'READING_CLUB', 'EXHIBITION']);
+export const activityStatusEnum = z.enum(['DRAFT', 'REGISTRATION_OPEN', 'ONGOING', 'ENDED', 'CANCELLED']);
+export const registrationStatusEnum = z.enum(['REGISTERED', 'WAITLIST', 'CANCELLED', 'CHECKED_IN', 'NO_SHOW']);
+
+export const createActivitySchema = z.object({
+  title: z.string().min(1, '活动标题必填'),
+  description: z.string().min(1, '活动描述必填'),
+  type: activityTypeEnum,
+  startTime: z.string().min(1, '开始时间必填'),
+  endTime: z.string().min(1, '结束时间必填'),
+  location: z.string().min(1, '活动地点必填'),
+  onlineUrl: z.string().optional(),
+  capacity: z.number().int().min(1, '活动容量至少为1'),
+  deadline: z.string().min(1, '报名截止时间必填'),
+  coverUrl: z.string().optional(),
+});
+
+export const updateActivitySchema = createActivitySchema.partial();
+
+export const activityStatusUpdateSchema = z.object({
+  status: activityStatusEnum,
+});
+
+export const activityFilterSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  status: activityStatusEnum.optional(),
+  type: activityTypeEnum.optional(),
+  keyword: z.string().optional(),
+});
+
+export const activityRegisterSchema = z.object({
+  borrowerId: z.number().int().min(1, '读者ID必填'),
+});
+
+export const activityCancelSchema = z.object({
+  borrowerId: z.number().int().min(1, '读者ID必填'),
+  cancelReason: z.string().optional(),
+});
+
+export const activityCheckinSchema = z.union([
+  z.object({
+    borrowerIds: z.array(z.number().int()).min(1, '至少选择一个读者'),
+  }),
+  z.object({
+    registrationId: z.number().int().min(1, '报名记录ID必填'),
+  }),
+]);
+
+export const activityCheckinBatchSchema = z.object({
+  ids: z.array(z.number().int()).min(1, '至少选择一条记录'),
+  status: z.enum(['CHECKED_IN', 'REGISTERED', 'NO_SHOW']),
+});
+
+export const activityFeedbackSchema = z.object({
+  borrowerId: z.number().int().min(1, '读者ID必填'),
+  rating: z.number().int().min(1, '评分至少1分').max(5, '评分最多5分'),
+  comment: z.string().optional(),
+});
+
+export const activityRegistrationFilterSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(50),
+  status: registrationStatusEnum.optional(),
+});

@@ -879,3 +879,222 @@ export interface ProcurementLedgerResponse {
   stats: ProcurementLedgerStats;
 }
 
+export type ActivityType = 'LECTURE' | 'READING_CLUB' | 'EXHIBITION';
+export type ActivityStatus = 'DRAFT' | 'REGISTRATION_OPEN' | 'ONGOING' | 'ENDED' | 'CANCELLED';
+export type RegistrationStatus = 'REGISTERED' | 'WAITLIST' | 'CANCELLED' | 'CHECKED_IN' | 'NO_SHOW';
+
+export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
+  LECTURE: '讲座',
+  READING_CLUB: '读书会',
+  EXHIBITION: '展览',
+};
+
+export const ACTIVITY_TYPE_COLORS: Record<ActivityType, string> = {
+  LECTURE: '#409eff',
+  READING_CLUB: '#67c23a',
+  EXHIBITION: '#e6a23c',
+};
+
+export const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {
+  DRAFT: '草稿',
+  REGISTRATION_OPEN: '报名中',
+  ONGOING: '进行中',
+  ENDED: '已结束',
+  CANCELLED: '已取消',
+};
+
+export const ACTIVITY_STATUS_TAGS: Record<ActivityStatus, 'info' | 'success' | 'warning' | 'primary' | 'danger'> = {
+  DRAFT: 'info',
+  REGISTRATION_OPEN: 'success',
+  ONGOING: 'warning',
+  ENDED: 'primary',
+  CANCELLED: 'danger',
+};
+
+export const ACTIVITY_STATUS_COLORS: Record<ActivityStatus, string> = {
+  DRAFT: '#909399',
+  REGISTRATION_OPEN: '#67c23a',
+  ONGOING: '#e6a23c',
+  ENDED: '#409eff',
+  CANCELLED: '#f56c6c',
+};
+
+export const REGISTRATION_STATUS_LABELS: Record<RegistrationStatus, string> = {
+  REGISTERED: '已报名',
+  WAITLIST: '候补',
+  CANCELLED: '已取消',
+  CHECKED_IN: '已签到',
+  NO_SHOW: '未出席',
+};
+
+export const REGISTRATION_STATUS_TAGS: Record<RegistrationStatus, 'success' | 'warning' | 'info' | 'primary' | 'danger'> = {
+  REGISTERED: 'success',
+  WAITLIST: 'warning',
+  CANCELLED: 'info',
+  CHECKED_IN: 'primary',
+  NO_SHOW: 'danger',
+};
+
+export interface Activity {
+  id: number;
+  title: string;
+  coverUrl?: string;
+  description: string;
+  type: ActivityType;
+  startTime: string;
+  endTime: string;
+  location: string;
+  onlineUrl?: string;
+  capacity: number;
+  deadline: string;
+  status: ActivityStatus;
+  createdById: number;
+  createdBy?: { id: number; username: string };
+  registeredCount?: number;
+  waitlistCount?: number;
+  checkedInCount?: number;
+  cancelCount?: number;
+  feedbackCount?: number;
+  avgRating?: number;
+  attendanceRate?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActivityRegistration {
+  id: number;
+  activityId: number;
+  activity?: Activity;
+  borrowerId: number;
+  borrower: {
+    id: number;
+    name: string;
+    phone?: string;
+    email?: string;
+  };
+  status: RegistrationStatus;
+  queuePosition?: number;
+  registeredAt: string;
+  cancelledAt?: string;
+  checkInAt?: string;
+  cancelReason?: string;
+}
+
+export interface ActivityFeedback {
+  id: number;
+  activityId: number;
+  borrowerId: number;
+  borrower: {
+    id: number;
+    name: string;
+  };
+  rating: number;
+  comment?: string;
+  createdAt: string;
+}
+
+export interface ActivityDetail extends Activity {
+  registrations: ActivityRegistration[];
+  waitlist: ActivityRegistration[];
+  cancellations: ActivityRegistration[];
+  feedbacks: ActivityFeedback[];
+  stats: {
+    capacity: number;
+    registeredCount: number;
+    waitlistCount: number;
+    checkedInCount: number;
+    cancelCount: number;
+    noShowCount: number;
+    attendanceRate: number;
+    feedbackCount: number;
+    avgRating: number;
+  };
+}
+
+export interface ActivityListResponse {
+  data: Activity[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  stats?: {
+    total: number;
+    draft: number;
+    registrationOpen: number;
+    ongoing: number;
+    ended: number;
+  };
+}
+
+export interface ActivityFilter {
+  page?: number;
+  pageSize?: number;
+  status?: ActivityStatus;
+  type?: ActivityType;
+  keyword?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface CreateActivityRequest {
+  title: string;
+  description: string;
+  type: ActivityType;
+  startTime: string;
+  endTime: string;
+  location: string;
+  onlineUrl?: string;
+  capacity: number;
+  deadline: string;
+  coverUrl?: string;
+}
+
+export interface UpdateActivityStatusRequest {
+  status: ActivityStatus;
+}
+
+export interface RegisterActivityRequest {
+  borrowerId: number;
+}
+
+export interface CancelRegistrationRequest {
+  borrowerId: number;
+  cancelReason?: string;
+}
+
+export interface CheckInRequest {
+  borrowerIds?: number[];
+  registrationId?: number;
+}
+
+export interface BatchCheckInRequest {
+  ids: number[];
+  status: 'CHECKED_IN' | 'REGISTERED' | 'NO_SHOW';
+}
+
+export interface SubmitFeedbackRequest {
+  borrowerId: number;
+  rating: number;
+  comment?: string;
+}
+
+export interface ActivityStats {
+  capacity: number;
+  registeredCount: number;
+  waitlistCount: number;
+  checkedInCount: number;
+  cancelCount: number;
+  noShowCount: number;
+  attendanceRate: number;
+  feedbackCount: number;
+  avgRating: number;
+}
+
+export interface GlobalActivityStats {
+  totalActivities: number;
+  ongoingActivities: number;
+  thisMonthActivities: number;
+  totalRegistrations: number;
+  avgAttendanceRate: number;
+}
+

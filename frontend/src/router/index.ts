@@ -127,7 +127,21 @@ const router = createRouter({
           name: 'ProcurementLedger',
           component: () => import('../views/ProcurementLedger.vue'),
         },
-
+        {
+          path: 'reading-activities',
+          name: 'ReadingActivities',
+          component: () => import('../views/ReadingActivities.vue'),
+        },
+        {
+          path: 'reading-activities/:id',
+          name: 'ActivityDetail',
+          component: () => import('../views/ActivityDetail.vue'),
+        },
+        {
+          path: 'my-activities',
+          name: 'MyActivities',
+          component: () => import('../views/MyActivities.vue'),
+        },
       ],
     },
   ],

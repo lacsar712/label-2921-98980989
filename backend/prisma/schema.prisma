@@ -130,6 +130,28 @@ enum PaymentMethod {
   OTHER
 }
 
+enum ActivityType {
+  LECTURE
+  READING_CLUB
+  EXHIBITION
+}
+
+enum ActivityStatus {
+  DRAFT
+  REGISTRATION_OPEN
+  ONGOING
+  ENDED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  WAITLIST
+  CANCELLED
+  CHECKED_IN
+  NO_SHOW
+}
+
 model User {
   id              Int               @id @default(autoincrement())
   username        String            @unique
@@ -151,6 +173,7 @@ model User {
   operatedArrivals ArrivalRecord[] @relation("ArrivalOperator")
   stockInArrivals ArrivalRecordItem[] @relation("StockInOperator")
   operatedReturns ReturnRecord[] @relation("ReturnOperator")
+  createdActivities Activity[]
 }
 
 model Message {
@@ -247,6 +270,8 @@ model Borrower {
   ratings   BookRating[]
   reservations Reservation[]
   compensations Compensation[]
+  activityRegistrations ActivityRegistration[]
+  activityFeedbacks ActivityFeedback[]
 }
 
 model Category {
@@ -645,4 +670,59 @@ model ReturnRecordItem {
 
   @@index([returnRecordId])
   @@index([orderItemId])
+}
+
+model Activity {
+  id            Int                @id @default(autoincrement())
+  title         String
+  coverUrl      String?
+  description   String
+  type          ActivityType
+  startTime     DateTime
+  endTime       DateTime
+  location      String
+  onlineUrl     String?
+  capacity      Int
+  deadline      DateTime
+  status        ActivityStatus     @default(DRAFT)
+  createdById   Int
+  createdBy     User               @relation(fields: [createdById], references: [id])
+  registrations ActivityRegistration[]
+  feedbacks     ActivityFeedback[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([status])
+  @@index([startTime])
+}
+
+model ActivityRegistration {
+  id            Int                @id @default(autoincrement())
+  activityId    Int
+  activity      Activity           @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  borrowerId    Int
+  borrower      Borrower           @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
+  status        RegistrationStatus @default(REGISTERED)
+  queuePosition Int?
+  registeredAt  DateTime           @default(now())
+  cancelledAt   DateTime?
+  checkInAt     DateTime?
+  cancelReason  String?
+
+  @@unique([activityId, borrowerId])
+  @@index([activityId, status])
+  @@index([borrowerId, status])
+}
+
+model ActivityFeedback {
+  id         Int       @id @default(autoincrement())
+  activityId Int
+  activity   Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  borrowerId Int
+  borrower   Borrower  @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
+  rating     Int
+  comment    String?
+  createdAt  DateTime  @default(now())
+
+  @@unique([activityId, borrowerId])
 }
