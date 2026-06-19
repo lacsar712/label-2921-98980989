@@ -72,6 +72,11 @@ const router = createRouter({
           name: 'Recommendations',
           component: () => import('../views/Recommendations.vue'),
         },
+        {
+          path: 'messages',
+          name: 'Messages',
+          component: () => import('../views/Messages.vue'),
+        },
 
       ],
     },

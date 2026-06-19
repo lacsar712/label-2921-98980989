@@ -25,6 +25,30 @@ enum SwapStatus {
   CANCELLED
 }
 
+enum MessageType {
+  SYSTEM
+  INVENTORY_ALERT
+  RESERVATION_PENDING
+  INVENTORY_REVIEW
+  PROCUREMENT_ARRIVAL
+  CUSTOM
+}
+
+enum PriorityLevel {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TargetType {
+  USER
+  ROLE
+  ALL_ADMINS
+  ALL_LIBRARIANS
+  ALL_USERS
+}
+
 model User {
   id              Int               @id @default(autoincrement())
   username        String            @unique
@@ -35,6 +59,47 @@ model User {
   schedules       Schedule[]
   requestedSwaps  ShiftSwapRequest[] @relation("RequestedSwaps")
   targetedSwaps   ShiftSwapRequest[] @relation("TargetedSwaps")
+  sentMessages    Message[]         @relation("SentMessages")
+  receivedReceipts MessageReceipt[] @relation("MessageReceipts")
+}
+
+model Message {
+  id            Int            @id @default(autoincrement())
+  title         String
+  content       String
+  type          MessageType    @default(SYSTEM)
+  priority      PriorityLevel  @default(MEDIUM)
+  targetType    TargetType     @default(ALL_USERS)
+  targetRole    Role?
+  senderId      Int?
+  sender        User?          @relation("SentMessages", fields: [senderId], references: [id])
+  createdAt     DateTime       @default(now())
+  receipts      MessageReceipt[] @relation("MessageReceipts")
+}
+
+model MessageReceipt {
+  id         Int       @id @default(autoincrement())
+  messageId  Int
+  message    Message   @relation("MessageReceipts", fields: [messageId], references: [id], onDelete: Cascade)
+  userId     Int
+  user       User      @relation("MessageReceipts", fields: [userId], references: [id], onDelete: Cascade)
+  isRead     Boolean   @default(false)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([messageId, userId])
+  @@index([userId, isRead])
+}
+
+model MessageTemplate {
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  title     String
+  content   String
+  type      MessageType   @default(CUSTOM)
+  priority  PriorityLevel @default(MEDIUM)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 model ServiceLocation {

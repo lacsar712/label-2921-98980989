@@ -154,3 +154,130 @@ export interface BookRating {
   comment?: string;
   createdAt: string;
 }
+
+export type MessageType =
+  | 'SYSTEM'
+  | 'INVENTORY_ALERT'
+  | 'RESERVATION_PENDING'
+  | 'INVENTORY_REVIEW'
+  | 'PROCUREMENT_ARRIVAL'
+  | 'CUSTOM';
+
+export type PriorityLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+
+export type TargetType =
+  | 'USER'
+  | 'ROLE'
+  | 'ALL_ADMINS'
+  | 'ALL_LIBRARIANS'
+  | 'ALL_USERS';
+
+export interface Message {
+  id: number;
+  messageId: number;
+  title: string;
+  content: string;
+  type: MessageType;
+  priority: PriorityLevel;
+  sender?: {
+    id: number;
+    username: string;
+    role: string;
+  };
+  isRead: boolean;
+  readAt?: string;
+  createdAt: string;
+}
+
+export interface MessageTemplate {
+  id: number;
+  name: string;
+  title: string;
+  content: string;
+  type: MessageType;
+  priority: PriorityLevel;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UnreadCount {
+  total: number;
+  byPriority: Record<PriorityLevel, number>;
+}
+
+export interface MessageListResponse {
+  data: Message[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface MessageFilter {
+  page?: number;
+  pageSize?: number;
+  type?: MessageType;
+  priority?: PriorityLevel;
+  isRead?: boolean;
+  keyword?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface CreateMessageRequest {
+  title: string;
+  content: string;
+  type?: MessageType;
+  priority?: PriorityLevel;
+  targetType: TargetType;
+  targetRole?: 'ADMIN' | 'LIBRARIAN';
+  targetUserIds?: number[];
+  templateId?: number;
+}
+
+export const MESSAGE_TYPE_LABELS: Record<MessageType, string> = {
+  SYSTEM: '系统通知',
+  INVENTORY_ALERT: '库存预警',
+  RESERVATION_PENDING: '预约待处理',
+  INVENTORY_REVIEW: '盘点复核',
+  PROCUREMENT_ARRIVAL: '采购到货',
+  CUSTOM: '自定义消息',
+};
+
+export const MESSAGE_TYPE_COLORS: Record<MessageType, string> = {
+  SYSTEM: '#409eff',
+  INVENTORY_ALERT: '#f56c6c',
+  RESERVATION_PENDING: '#e6a23c',
+  INVENTORY_REVIEW: '#909399',
+  PROCUREMENT_ARRIVAL: '#67c23a',
+  CUSTOM: '#909399',
+};
+
+export const PRIORITY_LABELS: Record<PriorityLevel, string> = {
+  LOW: '低',
+  MEDIUM: '中',
+  HIGH: '高',
+  URGENT: '紧急',
+};
+
+export const PRIORITY_COLORS: Record<PriorityLevel, string> = {
+  LOW: '#909399',
+  MEDIUM: '#409eff',
+  HIGH: '#e6a23c',
+  URGENT: '#f56c6c',
+};
+
+export const PRIORITY_TAGS: Record<PriorityLevel, 'info' | 'primary' | 'warning' | 'danger'> = {
+  LOW: 'info',
+  MEDIUM: 'primary',
+  HIGH: 'warning',
+  URGENT: 'danger',
+};
+
+export const TARGET_TYPE_LABELS: Record<TargetType, string> = {
+  USER: '指定用户',
+  ROLE: '指定角色',
+  ALL_ADMINS: '全体管理员',
+  ALL_LIBRARIANS: '全体馆员',
+  ALL_USERS: '全体人员',
+};

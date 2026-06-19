@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Role, ShiftType } from '@prisma/client';
+import { Role, ShiftType, MessageType, PriorityLevel, TargetType } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import prisma from './utils/prisma';
 
@@ -240,6 +240,132 @@ async function main() {
       data: ratingData,
       skipDuplicates: true,
     });
+  }
+
+  // Create Message Templates
+  console.log('Creating message templates...');
+  const templates = [
+    {
+      name: '库存预警通知',
+      title: '【库存预警】图书库存不足',
+      content: '您好，部分图书库存已低于安全阈值，请及时进行采购补货。具体清单请查看库存报表。',
+      type: MessageType.INVENTORY_ALERT,
+      priority: PriorityLevel.HIGH,
+    },
+    {
+      name: '预约待处理通知',
+      title: '【预约提醒】有新的图书预约需要处理',
+      content: '您好，当前有待处理的图书预约请求，请及时登录系统进行处理，以免影响读者体验。',
+      type: MessageType.RESERVATION_PENDING,
+      priority: PriorityLevel.MEDIUM,
+    },
+    {
+      name: '盘点复核通知',
+      title: '【盘点提醒】库存盘点待复核',
+      content: '您好，本月库存盘点工作已完成，请相关负责人及时登录系统进行复核确认。',
+      type: MessageType.INVENTORY_REVIEW,
+      priority: PriorityLevel.MEDIUM,
+    },
+    {
+      name: '采购到货通知',
+      title: '【采购到货】新采购图书已到馆',
+      content: '您好，新采购的图书已到货，请及时进行验收、分类和上架工作。',
+      type: MessageType.PROCUREMENT_ARRIVAL,
+      priority: PriorityLevel.LOW,
+    },
+    {
+      name: '系统公告模板',
+      title: '【系统公告】',
+      content: '请在此处输入公告内容...',
+      type: MessageType.SYSTEM,
+      priority: PriorityLevel.MEDIUM,
+    },
+    {
+      name: '紧急通知模板',
+      title: '【紧急通知】',
+      content: '请在此处输入紧急通知内容...',
+      type: MessageType.CUSTOM,
+      priority: PriorityLevel.URGENT,
+    },
+  ];
+
+  for (const tpl of templates) {
+    const exists = await prisma.messageTemplate.findUnique({ where: { name: tpl.name } });
+    if (!exists) {
+      await prisma.messageTemplate.create({ data: tpl });
+    }
+  }
+
+  // Create Sample Messages
+  console.log('Creating sample messages...');
+  const allUsers = await prisma.user.findMany();
+  const adminUser = await prisma.user.findUnique({ where: { username: 'admin' } });
+
+  if (allUsers.length > 0 && adminUser) {
+    const sampleMessages = [
+      {
+        title: '【系统公告】欢迎使用图书管理系统',
+        content: '欢迎使用新版图书管理系统！本系统新增了站内消息功能，重要业务通知将通过站内消息推送给您。如有问题请联系系统管理员。',
+        type: MessageType.SYSTEM,
+        priority: PriorityLevel.MEDIUM,
+        targetType: TargetType.ALL_USERS,
+      },
+      {
+        title: '【库存预警】本月有25种图书库存不足',
+        content: '库存监控系统检测到有25种图书库存已低于5本，请采购部门及时安排补货。点击查看库存预警详情。',
+        type: MessageType.INVENTORY_ALERT,
+        priority: PriorityLevel.HIGH,
+        targetType: TargetType.ALL_ADMINS,
+      },
+      {
+        title: '【预约提醒】当前有8条待处理预约',
+        content: '截止目前共有8条图书预约请求待处理，请相关馆员及时登录系统进行处理，为读者提供更好的服务体验。',
+        type: MessageType.RESERVATION_PENDING,
+        priority: PriorityLevel.MEDIUM,
+        targetType: TargetType.ALL_LIBRARIANS,
+      },
+      {
+        title: '【紧急通知】系统维护安排',
+        content: '本周六凌晨2:00-4:00将进行系统维护升级，期间系统将暂停服务，请提前做好相关工作安排。',
+        type: MessageType.CUSTOM,
+        priority: PriorityLevel.URGENT,
+        targetType: TargetType.ALL_USERS,
+      },
+    ];
+
+    for (const msg of sampleMessages) {
+      let targetUserIds: number[] = [];
+      switch (msg.targetType) {
+        case TargetType.ALL_USERS:
+          targetUserIds = allUsers.map((u) => u.id);
+          break;
+        case TargetType.ALL_ADMINS:
+          targetUserIds = allUsers.filter((u) => u.role === Role.ADMIN).map((u) => u.id);
+          break;
+        case TargetType.ALL_LIBRARIANS:
+          targetUserIds = allUsers.filter((u) => u.role === Role.LIBRARIAN).map((u) => u.id);
+          break;
+      }
+
+      if (targetUserIds.length > 0) {
+        const existingMsg = await prisma.message.findFirst({
+          where: { title: msg.title, createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+        });
+        if (!existingMsg) {
+          await prisma.message.create({
+            data: {
+              ...msg,
+              senderId: adminUser.id,
+              receipts: {
+                createMany: {
+                  data: targetUserIds.map((uid) => ({ userId: uid })),
+                },
+              },
+            },
+          });
+        }
+      }
+    }
   }
 
   console.log('Seed data created successfully!');

@@ -59,6 +59,10 @@
           <el-icon><Monitor /></el-icon>
           <span>扫码查书</span>
         </el-menu-item>
+        <el-menu-item index="/messages">
+          <el-icon><Bell /></el-icon>
+          <span>消息中心</span>
+        </el-menu-item>
         <el-menu-item
           v-if="userStore.isAdmin"
           index="/system-settings"
@@ -87,6 +91,7 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
+          <MessageNotification />
           <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-avatar
@@ -97,6 +102,10 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
+                <el-dropdown-item command="messages">
+                  <el-icon><Bell /></el-icon>
+                  消息中心
+                </el-dropdown-item>
                 <el-dropdown-item command="logout">
                   退出登录
                 </el-dropdown-item>
@@ -124,6 +133,7 @@
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../store/user';
+import MessageNotification from '../components/MessageNotification.vue';
 import {
   Management,
   DataBoard,
@@ -138,7 +148,8 @@ import {
   Clock,
   Sort,
   MagicStick,
-  Monitor
+  Monitor,
+  Bell
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -159,7 +170,8 @@ const currentRouteName = computed(() => {
     '/shift-swaps': '换班请求',
     '/recommendations': '智能荐书',
     '/kiosk': '扫码查书',
-    '/system-settings': '系统管理'
+    '/system-settings': '系统管理',
+    '/messages': '消息中心'
   };
   return titles[route.path] || '首页';
 });
@@ -168,6 +180,8 @@ const handleCommand = (command: string) => {
   if (command === 'logout') {
     userStore.logout();
     router.push('/login');
+  } else if (command === 'messages') {
+    router.push('/messages');
   }
 };
 </script>
@@ -219,6 +233,12 @@ const handleCommand = (command: string) => {
         color: #409eff;
       }
     }
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
   .user-info {
