@@ -12,10 +12,15 @@ const router = Router();
  * @access Public
  */
 router.get('/', async (req, res) => {
-  const { categoryId, search } = req.query;
+  const { categoryId, search, seriesId } = req.query;
   const books = await prisma.book.findMany({
     where: {
       ...(categoryId ? { categoryId: Number(categoryId) } : {}),
+      ...(seriesId ? {
+        seriesVolume: {
+          seriesId: Number(seriesId),
+        },
+      } : {}),
       ...(search ? {
         OR: [
           { title: { contains: String(search) } },
@@ -24,7 +29,14 @@ router.get('/', async (req, res) => {
         ]
       } : {}),
     },
-    include: { category: true },
+    include: {
+      category: true,
+      seriesVolume: {
+        include: {
+          series: true,
+        },
+      },
+    },
   });
   res.json(books);
 });
@@ -37,7 +49,14 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const book = await prisma.book.findUnique({
     where: { id: Number(req.params.id) },
-    include: { category: true },
+    include: {
+      category: true,
+      seriesVolume: {
+        include: {
+          series: true,
+        },
+      },
+    },
   });
   if (!book) return res.status(404).json({ message: 'Book not found' });
   res.json(book);
@@ -55,10 +74,30 @@ router.post('/', authenticate, authorize([Role.ADMIN, Role.LIBRARIAN]), async (r
       categoryId: Number(req.body.categoryId),
       price: Number(req.body.price),
       stock: Number(req.body.stock),
+      seriesId: req.body.seriesId ? Number(req.body.seriesId) : undefined,
+      volumeNumber: req.body.volumeNumber ? Number(req.body.volumeNumber) : undefined,
     });
-    const book = await prisma.book.create({
-      data: payload,
+
+    const { seriesId, volumeNumber, ...bookData } = payload;
+
+    const book = await prisma.$transaction(async (tx) => {
+      const newBook = await tx.book.create({
+        data: bookData,
+      });
+
+      if (seriesId && volumeNumber) {
+        await tx.seriesVolume.create({
+          data: {
+            seriesId,
+            bookId: newBook.id,
+            volumeNumber,
+          },
+        });
+      }
+
+      return newBook;
     });
+
     res.status(201).json(book);
   } catch (_error) {
     res.status(400).json({ message: 'Failed to create book', error: (_error as any).message });
@@ -77,11 +116,50 @@ router.put('/:id', authenticate, authorize([Role.ADMIN, Role.LIBRARIAN]), async 
       price: req.body.price !== undefined ? Number(req.body.price) : undefined,
       stock: req.body.stock !== undefined ? Number(req.body.stock) : undefined,
       categoryId: req.body.categoryId !== undefined ? Number(req.body.categoryId) : undefined,
+      seriesId: req.body.seriesId !== undefined ? Number(req.body.seriesId) : undefined,
+      volumeNumber: req.body.volumeNumber !== undefined ? Number(req.body.volumeNumber) : undefined,
     });
-    const book = await prisma.book.update({
-      where: { id: Number(req.params.id) },
-      data: payload,
+
+    const { seriesId, volumeNumber, ...bookData } = payload;
+    const bookId = Number(req.params.id);
+
+    const book = await prisma.$transaction(async (tx) => {
+      const updatedBook = await tx.book.update({
+        where: { id: bookId },
+        data: bookData,
+      });
+
+      const existingVolume = await tx.seriesVolume.findFirst({
+        where: { bookId },
+      });
+
+      if (seriesId && volumeNumber) {
+        if (existingVolume) {
+          await tx.seriesVolume.update({
+            where: { id: existingVolume.id },
+            data: {
+              seriesId,
+              volumeNumber,
+            },
+          });
+        } else {
+          await tx.seriesVolume.create({
+            data: {
+              seriesId,
+              bookId,
+              volumeNumber,
+            },
+          });
+        }
+      } else if (existingVolume && seriesId === null) {
+        await tx.seriesVolume.delete({
+          where: { id: existingVolume.id },
+        });
+      }
+
+      return updatedBook;
     });
+
     res.json(book);
   } catch (_error) {
     res.status(400).json({ message: 'Failed to update book', error: (_error as any).message });

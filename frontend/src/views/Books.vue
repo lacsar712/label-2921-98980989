@@ -29,6 +29,20 @@
               :value="cat.id"
             />
           </el-select>
+          <el-select
+            v-model="filterSeries"
+            placeholder="全部系列"
+            clearable
+            style="width: 180px; margin-right: 10px"
+            @change="fetchBooks"
+          >
+            <el-option
+              v-for="series in seriesList"
+              :key="series.id"
+              :label="series.name"
+              :value="series.id"
+            />
+          </el-select>
           <el-button
             v-if="userStore.isLibrarian"
             type="primary"
@@ -68,6 +82,30 @@
           label="分类"
           width="120"
         />
+        <el-table-column
+          label="所属系列"
+          min-width="180"
+          show-overflow-tooltip
+        >
+          <template #default="{ row }">
+            <template v-if="row.seriesVolume">
+              <el-link
+                type="primary"
+                @click="goToSeries(row.seriesVolume.seriesId)"
+              >
+                {{ row.seriesVolume.series.name }}
+              </el-link>
+              <el-tag
+                type="info"
+                size="small"
+                style="margin-left: 5px"
+              >
+                第{{ row.seriesVolume.volumeNumber }}册
+              </el-tag>
+            </template>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="price"
           label="价格"
@@ -191,6 +229,37 @@
               :value="cat.id"
             />
           </el-select>
+        </el-form-item>
+        <el-form-item
+          label="所属系列"
+          prop="seriesId"
+        >
+          <el-select
+            v-model="form.seriesId"
+            placeholder="请选择系列（可选）"
+            style="width: 100%"
+            clearable
+            filterable
+          >
+            <el-option
+              v-for="series in seriesList"
+              :key="series.id"
+              :label="series.name"
+              :value="series.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item
+          v-if="form.seriesId"
+          label="册序号"
+          prop="volumeNumber"
+        >
+          <el-input-number
+            v-model="form.volumeNumber"
+            :min="1"
+            style="width: 100%"
+            placeholder="请输入册序号"
+          />
         </el-form-item>
         <el-form-item
           label="价格"
@@ -338,19 +407,24 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue';
+import { useRouter } from 'vue-router';
 import { Search, Plus } from '@element-plus/icons-vue';
 import api from '../api';
 import { useUserStore } from '../store/user';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import type { FormInstance } from 'element-plus';
+import type { BookSeries } from '../types';
 
+const router = useRouter();
 const userStore = useUserStore();
 const books = ref<any[]>([]);
 const categories = ref<any[]>([]);
+const seriesList = ref<BookSeries[]>([]);
 const borrowers = ref<any[]>([]);
 const loading = ref(false);
 const search = ref('');
 const filterCategory = ref('');
+const filterSeries = ref('');
 
 const dialogVisible = ref(false);
 const dialogTitle = ref('添加图书');
@@ -387,6 +461,8 @@ const form = reactive({
   author: '',
   isbn: '',
   categoryId: undefined,
+  seriesId: undefined as number | undefined,
+  volumeNumber: undefined as number | undefined,
   price: 0,
   stock: 0,
   description: ''
@@ -413,9 +489,12 @@ const rules = {
 const fetchBooks = async () => {
   loading.value = true;
   try {
-    const res: any = await api.get('/books', {
-      params: { search: search.value, categoryId: filterCategory.value }
-    });
+    const params: any = {
+      search: search.value,
+      categoryId: filterCategory.value,
+    };
+    if (filterSeries.value) params.seriesId = filterSeries.value;
+    const res: any = await api.get('/books', { params });
     // 获取每本书的在借数量
     const booksWithBorrowCount = await Promise.all(
       res.map(async (book: any) => {
@@ -429,6 +508,15 @@ const fetchBooks = async () => {
   }
 };
 
+const fetchSeries = async () => {
+  try {
+    const res: any = await api.get('/series');
+    seriesList.value = res;
+  } catch (error) {
+    console.error('Failed to fetch series:', error);
+  }
+};
+
 const fetchCategories = async () => {
   const res: any = await api.get('/categories');
   categories.value = res;
@@ -437,7 +525,18 @@ const fetchCategories = async () => {
 const handleAdd = () => {
   isEdit.value = false;
   dialogTitle.value = '添加图书';
-  Object.assign(form, { id: undefined, title: '', author: '', isbn: '', categoryId: undefined, price: 0, stock: 0, description: '' });
+  Object.assign(form, {
+    id: undefined,
+    title: '',
+    author: '',
+    isbn: '',
+    categoryId: undefined,
+    seriesId: undefined,
+    volumeNumber: undefined,
+    price: 0,
+    stock: 0,
+    description: ''
+  });
   dialogVisible.value = true;
 };
 
@@ -450,11 +549,17 @@ const handleEdit = (row: any) => {
     author: row.author,
     isbn: row.isbn,
     categoryId: row.categoryId,
+    seriesId: row.seriesVolume?.seriesId,
+    volumeNumber: row.seriesVolume?.volumeNumber,
     price: row.price,
     stock: row.stock,
     description: row.description
   });
   dialogVisible.value = true;
+};
+
+const goToSeries = (seriesId: number) => {
+  router.push(`/series/${seriesId}`);
 };
 
 const handleDelete = (row: any) => {
@@ -564,6 +669,7 @@ const submitForm = async () => {
 onMounted(() => {
   fetchBooks();
   fetchCategories();
+  fetchSeries();
   fetchBorrowers();
 });
 </script>
@@ -573,5 +679,9 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.text-muted {
+  color: #909399;
 }
 </style>

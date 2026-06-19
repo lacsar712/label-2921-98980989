@@ -21,6 +21,8 @@ export const bookSchema = z.object({
   description: z.string().optional(),
   coverUrl: z.string().optional(),
   location: z.string().optional(),
+  seriesId: z.number().int().optional(),
+  volumeNumber: z.number().int().optional(),
 });
 
 export const bookUpdateSchema = bookSchema.partial().extend({ id: z.number().int().optional() });
@@ -109,3 +111,40 @@ export const createTemplateSchema = z.object({
 });
 
 export const updateTemplateSchema = createTemplateSchema.partial();
+
+export const seriesTypeEnum = z.enum(['MONOGRAPH', 'TEXTBOOK', 'JOURNAL_BOUND', 'COLLECTION', 'REFERENCE', 'OTHER']);
+export const purchaseStatusEnum = z.enum(['NONE', 'PENDING', 'APPROVED', 'REJECTED', 'PURCHASED']);
+
+export const seriesSchema = z.object({
+  name: z.string().min(1, '系列名称必填'),
+  description: z.string().optional(),
+  coverUrl: z.string().optional(),
+  expectedTotalVolumes: z.number().int().min(1, '预期总册数必须大于0'),
+  seriesType: seriesTypeEnum.default('OTHER'),
+});
+
+export const seriesUpdateSchema = seriesSchema.partial();
+
+export const seriesVolumeSchema = z.object({
+  seriesId: z.number().int(),
+  bookId: z.number().int().optional(),
+  volumeNumber: z.number().int().min(1, '册序号必须大于0'),
+  isMissing: z.boolean().default(false),
+  purchaseStatus: purchaseStatusEnum.default('NONE'),
+});
+
+export const seriesVolumeUpdateSchema = seriesVolumeSchema.partial().extend({
+  id: z.number().int().optional(),
+});
+
+export const purchaseRequestSchema = z.object({
+  seriesId: z.number().int(),
+  volumeId: z.number().int(),
+  reason: z.string().optional(),
+  estimatedPrice: z.number().min(0).optional(),
+});
+
+export const purchaseRequestReviewSchema = z.object({
+  status: z.enum(['APPROVED', 'REJECTED', 'PURCHASED']),
+  reviewNote: z.string().optional(),
+});

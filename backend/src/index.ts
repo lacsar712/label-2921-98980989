@@ -20,6 +20,7 @@ import reservationRoutes from './routes/reservations';
 import ratingRoutes from './routes/ratings';
 import kioskRoutes from './routes/kiosk';
 import messageRoutes from './routes/messages';
+import seriesRoutes from './routes/series';
 import logger from './utils/logger';
 import { exec } from 'child_process';
 
@@ -53,6 +54,7 @@ app.use('/reservations', reservationRoutes);
 app.use('/ratings', ratingRoutes);
 app.use('/kiosk', kioskRoutes);
 app.use('/messages', messageRoutes);
+app.use('/series', seriesRoutes);
 
 // Error Handling
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {

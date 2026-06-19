@@ -27,6 +27,14 @@
           <el-icon><Notebook /></el-icon>
           <span>图书管理</span>
         </el-menu-item>
+        <el-menu-item index="/series">
+          <el-icon><List /></el-icon>
+          <span>丛书系列</span>
+        </el-menu-item>
+        <el-menu-item index="/purchase-requests">
+          <el-icon><ShoppingCart /></el-icon>
+          <span>采购申请</span>
+        </el-menu-item>
         <el-menu-item index="/categories">
           <el-icon><Collection /></el-icon>
           <span>分类管理</span>
@@ -154,7 +162,9 @@ import {
   MagicStick,
   Monitor,
   Bell,
-  DataAnalysis
+  DataAnalysis,
+  List,
+  ShoppingCart
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -167,6 +177,8 @@ const currentRouteName = computed(() => {
   const titles: Record<string, string> = {
     '/': '仪表盘',
     '/books': '图书管理',
+    '/series': '丛书系列',
+    '/purchase-requests': '采购申请',
     '/categories': '分类管理',
     '/borrowers': '借阅用户',
     '/borrows': '借阅历史',

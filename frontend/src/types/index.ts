@@ -358,3 +358,102 @@ export const METRIC_LABELS: Record<string, string> = {
   newBooks: '新增图书',
   stockChange: '库存变动',
 };
+
+export type SeriesType = 'MONOGRAPH' | 'TEXTBOOK' | 'JOURNAL_BOUND' | 'COLLECTION' | 'REFERENCE' | 'OTHER';
+export type PurchaseStatus = 'NONE' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PURCHASED';
+
+export const SERIES_TYPE_LABELS: Record<SeriesType, string> = {
+  MONOGRAPH: '专著',
+  TEXTBOOK: '教材',
+  JOURNAL_BOUND: '期刊合订',
+  COLLECTION: '丛书',
+  REFERENCE: '参考书',
+  OTHER: '其他',
+};
+
+export const PURCHASE_STATUS_LABELS: Record<PurchaseStatus, string> = {
+  NONE: '无',
+  PENDING: '待审核',
+  APPROVED: '已批准',
+  REJECTED: '已拒绝',
+  PURCHASED: '已采购',
+};
+
+export const PURCHASE_STATUS_TYPES: Record<PurchaseStatus, string> = {
+  NONE: 'info',
+  PENDING: 'warning',
+  APPROVED: 'primary',
+  REJECTED: 'danger',
+  PURCHASED: 'success',
+};
+
+export interface BookSeries {
+  id: number;
+  name: string;
+  description?: string;
+  coverUrl?: string;
+  expectedTotalVolumes: number;
+  seriesType: SeriesType;
+  createdAt: string;
+  updatedAt: string;
+  collectedCount?: number;
+  missingCount?: number;
+  borrowRatio?: number;
+  completion?: number;
+}
+
+export interface SeriesVolume {
+  id: number;
+  seriesId: number;
+  series?: BookSeries;
+  bookId?: number;
+  book?: Book;
+  volumeNumber: number;
+  isMissing: boolean;
+  purchaseStatus: PurchaseStatus;
+  createdAt: string;
+  updatedAt: string;
+  purchaseRequests?: PurchaseRequest[];
+}
+
+export interface PurchaseRequest {
+  id: number;
+  seriesId: number;
+  series?: BookSeries;
+  volumeId: number;
+  volume?: SeriesVolume;
+  requestedById: number;
+  requestedBy?: { id: number; username: string };
+  status: PurchaseStatus;
+  reason?: string;
+  estimatedPrice?: number;
+  reviewedById?: number;
+  reviewedBy?: { id: number; username: string };
+  reviewedAt?: string;
+  purchasedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SeriesDetail extends BookSeries {
+  volumes: SeriesVolume[];
+  stats: {
+    collectedCount: number;
+    missingCount: number;
+    pendingPurchaseCount: number;
+    completion: number;
+    borrowRatio: number;
+    borrowedCount: number;
+  };
+  missingVolumes: SeriesVolume[];
+  pendingPurchase: SeriesVolume[];
+}
+
+export interface BookWithSeries extends Book {
+  seriesVolume?: {
+    id: number;
+    seriesId: number;
+    volumeNumber: number;
+    series: BookSeries;
+  };
+}

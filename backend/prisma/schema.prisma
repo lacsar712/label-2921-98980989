@@ -49,6 +49,23 @@ enum TargetType {
   ALL_USERS
 }
 
+enum SeriesType {
+  MONOGRAPH
+  TEXTBOOK
+  JOURNAL_BOUND
+  COLLECTION
+  REFERENCE
+  OTHER
+}
+
+enum PurchaseStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+  PURCHASED
+}
+
 model User {
   id              Int               @id @default(autoincrement())
   username        String            @unique
@@ -61,6 +78,8 @@ model User {
   targetedSwaps   ShiftSwapRequest[] @relation("TargetedSwaps")
   sentMessages    Message[]         @relation("SentMessages")
   receivedReceipts MessageReceipt[] @relation("MessageReceipts")
+  purchaseRequests PurchaseRequest[] @relation("RequestedBy")
+  reviewedPurchases PurchaseRequest[] @relation("ReviewedBy")
 }
 
 model Message {
@@ -181,6 +200,7 @@ model Book {
   borrows     BorrowRecord[]
   ratings     BookRating[]
   reservations Reservation[]
+  seriesVolume SeriesVolume?
 }
 
 model BorrowRecord {
@@ -220,4 +240,58 @@ model Reservation {
 
   @@index([bookId, status])
   @@index([borrowerId, status])
+}
+
+model BookSeries {
+  id                 Int            @id @default(autoincrement())
+  name               String
+  description        String?
+  coverUrl           String?
+  expectedTotalVolumes Int
+  seriesType         SeriesType     @default(OTHER)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  volumes            SeriesVolume[]
+  purchaseRequests   PurchaseRequest[]
+
+  @@unique([name])
+}
+
+model SeriesVolume {
+  id              Int             @id @default(autoincrement())
+  seriesId        Int
+  series          BookSeries      @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  bookId          Int?
+  book            Book?           @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  volumeNumber    Int
+  isMissing       Boolean         @default(false)
+  purchaseStatus  PurchaseStatus  @default(NONE)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  purchaseRequests PurchaseRequest[]
+
+  @@unique([seriesId, volumeNumber])
+  @@index([seriesId, volumeNumber])
+}
+
+model PurchaseRequest {
+  id             Int            @id @default(autoincrement())
+  seriesId       Int
+  series         BookSeries     @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  volumeId       Int
+  volume         SeriesVolume   @relation(fields: [volumeId], references: [id], onDelete: Cascade)
+  requestedById  Int
+  requestedBy    User           @relation(fields: [requestedById], references: [id])
+  status         PurchaseStatus @default(PENDING)
+  reason         String?
+  estimatedPrice Float?
+  reviewedById   Int?
+  reviewedBy     User?          @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt     DateTime?
+  purchasedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([seriesId, status])
+  @@index([volumeId, status])
 }
