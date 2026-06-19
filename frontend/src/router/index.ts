@@ -97,6 +97,16 @@ const router = createRouter({
           name: 'ReportCenter',
           component: () => import('../views/ReportCenter.vue'),
         },
+        {
+          path: 'interlibrary-loans',
+          name: 'InterLibraryLoans',
+          component: () => import('../views/InterLibraryLoans.vue'),
+        },
+        {
+          path: 'interlibrary-loans/:id',
+          name: 'InterLibraryLoanDetail',
+          component: () => import('../views/InterLibraryLoanDetail.vue'),
+        },
 
       ],
     },

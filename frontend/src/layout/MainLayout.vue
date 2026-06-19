@@ -67,6 +67,10 @@
           <el-icon><Monitor /></el-icon>
           <span>扫码查书</span>
         </el-menu-item>
+        <el-menu-item index="/interlibrary-loans">
+          <el-icon><Connection /></el-icon>
+          <span>馆际互借</span>
+        </el-menu-item>
         <el-menu-item index="/messages">
           <el-icon><Bell /></el-icon>
           <span>消息中心</span>
@@ -164,7 +168,8 @@ import {
   Bell,
   DataAnalysis,
   List,
-  ShoppingCart
+  ShoppingCart,
+  Connection
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -189,7 +194,8 @@ const currentRouteName = computed(() => {
     '/kiosk': '扫码查书',
     '/system-settings': '系统管理',
     '/messages': '消息中心',
-    '/report-center': '统计报表'
+    '/report-center': '统计报表',
+    '/interlibrary-loans': '馆际互借'
   };
   return titles[route.path] || '首页';
 });

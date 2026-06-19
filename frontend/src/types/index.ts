@@ -457,3 +457,132 @@ export interface BookWithSeries extends Book {
     series: BookSeries;
   };
 }
+
+export type InterLibraryLoanDirection = 'BORROW_IN' | 'LEND_OUT';
+export type InterLibraryLoanStatus =
+  | 'PENDING'
+  | 'SHIPPED'
+  | 'IN_TRANSIT'
+  | 'IN_USE'
+  | 'RETURNED'
+  | 'REJECTED';
+export type FeePayer = 'OUR_LIBRARY' | 'OTHER_LIBRARY' | 'SPLIT';
+
+export interface InterLibraryLoanTimeline {
+  id: number;
+  loanId: number;
+  status?: InterLibraryLoanStatus;
+  action: string;
+  operatorId?: number;
+  operator?: { id: number; username: string };
+  note?: string;
+  timestamp: string;
+}
+
+export interface InterLibraryLoanExtension {
+  id: number;
+  loanId: number;
+  originalDueDate: string;
+  newDueDate: string;
+  reason: string;
+  approvedById?: number;
+  approvedBy?: { id: number; username: string };
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  approvedAt?: string;
+  createdAt: string;
+}
+
+export interface InterLibraryLoanReminder {
+  id: number;
+  loanId: number;
+  content: string;
+  operatorId?: number;
+  operator?: { id: number; username: string };
+  createdAt: string;
+}
+
+export interface InterLibraryLoan {
+  id: number;
+  bookTitle: string;
+  isbn: string;
+  volumeCount: number;
+  partnerLibraryName: string;
+  contactPerson: string;
+  contactPhone?: string;
+  trackingNumber?: string;
+  lendDate?: string;
+  dueDate?: string;
+  actualReturnDate?: string;
+  feePayer: FeePayer;
+  direction: InterLibraryLoanDirection;
+  status: InterLibraryLoanStatus;
+  remarks?: string;
+  rejectionReason?: string;
+  createdById?: number;
+  createdBy?: { id: number; username: string; role: string };
+  timelines: InterLibraryLoanTimeline[];
+  extensions: InterLibraryLoanExtension[];
+  reminders: InterLibraryLoanReminder[];
+  createdAt: string;
+  updatedAt: string;
+  isOverdue: boolean;
+  overdueDays: number;
+}
+
+export const DIRECTION_LABELS: Record<InterLibraryLoanDirection, string> = {
+  BORROW_IN: '借入',
+  LEND_OUT: '借出',
+};
+
+export const DIRECTION_COLORS: Record<InterLibraryLoanDirection, string> = {
+  BORROW_IN: '#409eff',
+  LEND_OUT: '#e6a23c',
+};
+
+export const DIRECTION_TAGS: Record<InterLibraryLoanDirection, 'primary' | 'warning'> = {
+  BORROW_IN: 'primary',
+  LEND_OUT: 'warning',
+};
+
+export const STATUS_LABELS: Record<InterLibraryLoanStatus, string> = {
+  PENDING: '申请中',
+  SHIPPED: '已发货',
+  IN_TRANSIT: '运输中',
+  IN_USE: '在馆使用',
+  RETURNED: '已归还',
+  REJECTED: '已拒收',
+};
+
+export const STATUS_TYPES: Record<InterLibraryLoanStatus, 'info' | 'warning' | 'primary' | 'success' | 'success' | 'danger'> = {
+  PENDING: 'info',
+  SHIPPED: 'warning',
+  IN_TRANSIT: 'primary',
+  IN_USE: 'success',
+  RETURNED: 'success',
+  REJECTED: 'danger',
+};
+
+export const STATUS_COLORS: Record<InterLibraryLoanStatus, string> = {
+  PENDING: '#909399',
+  SHIPPED: '#e6a23c',
+  IN_TRANSIT: '#409eff',
+  IN_USE: '#67c23a',
+  RETURNED: '#67c23a',
+  REJECTED: '#f56c6c',
+};
+
+export const FEE_PAYER_LABELS: Record<FeePayer, string> = {
+  OUR_LIBRARY: '本馆承担',
+  OTHER_LIBRARY: '对方馆承担',
+  SPLIT: '双方分摊',
+};
+
+export const STATUS_FLOW: { status: InterLibraryLoanStatus; label: string; from?: InterLibraryLoanStatus[] }[] = [
+  { status: 'PENDING', label: '申请中' },
+  { status: 'SHIPPED', label: '已发货', from: ['PENDING'] },
+  { status: 'IN_TRANSIT', label: '运输中', from: ['PENDING', 'SHIPPED'] },
+  { status: 'IN_USE', label: '在馆使用', from: ['SHIPPED', 'IN_TRANSIT'] },
+  { status: 'RETURNED', label: '已归还', from: ['IN_USE'] },
+  { status: 'REJECTED', label: '已拒收', from: ['PENDING', 'SHIPPED', 'IN_TRANSIT'] },
+];
+

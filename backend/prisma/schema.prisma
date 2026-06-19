@@ -66,6 +66,26 @@ enum PurchaseStatus {
   PURCHASED
 }
 
+enum InterLibraryLoanDirection {
+  BORROW_IN
+  LEND_OUT
+}
+
+enum InterLibraryLoanStatus {
+  PENDING
+  SHIPPED
+  IN_TRANSIT
+  IN_USE
+  RETURNED
+  REJECTED
+}
+
+enum FeePayer {
+  OUR_LIBRARY
+  OTHER_LIBRARY
+  SPLIT
+}
+
 model User {
   id              Int               @id @default(autoincrement())
   username        String            @unique
@@ -294,4 +314,76 @@ model PurchaseRequest {
 
   @@index([seriesId, status])
   @@index([volumeId, status])
+}
+
+model InterLibraryLoan {
+  id                 Int                       @id @default(autoincrement())
+  bookTitle          String
+  isbn               String
+  volumeCount        Int                       @default(1)
+  partnerLibraryName String
+  contactPerson      String
+  contactPhone       String?
+  trackingNumber     String?
+  lendDate           DateTime?
+  dueDate            DateTime?
+  actualReturnDate   DateTime?
+  feePayer           FeePayer                  @default(OUR_LIBRARY)
+  direction          InterLibraryLoanDirection
+  status             InterLibraryLoanStatus    @default(PENDING)
+  remarks            String?
+  rejectionReason    String?
+  createdById        Int?
+  createdBy          User?                     @relation(fields: [createdById], references: [id])
+  timelines          InterLibraryLoanTimeline[]
+  extensions         InterLibraryLoanExtension[]
+  reminders          InterLibraryLoanReminder[]
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+
+  @@index([direction, status])
+  @@index([partnerLibraryName])
+  @@index([status, dueDate])
+}
+
+model InterLibraryLoanTimeline {
+  id               Int                     @id @default(autoincrement())
+  loanId           Int
+  loan             InterLibraryLoan        @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  status           InterLibraryLoanStatus?
+  action           String
+  operatorId       Int?
+  operator         User?                   @relation(fields: [operatorId], references: [id])
+  note             String?
+  timestamp        DateTime                @default(now())
+
+  @@index([loanId])
+}
+
+model InterLibraryLoanExtension {
+  id               Int                     @id @default(autoincrement())
+  loanId           Int
+  loan             InterLibraryLoan        @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  originalDueDate  DateTime
+  newDueDate       DateTime
+  reason           String
+  approvedById     Int?
+  approvedBy       User?                   @relation(fields: [approvedById], references: [id])
+  status           String                  @default("PENDING")
+  approvedAt       DateTime?
+  createdAt        DateTime                @default(now())
+
+  @@index([loanId])
+}
+
+model InterLibraryLoanReminder {
+  id               Int                     @id @default(autoincrement())
+  loanId           Int
+  loan             InterLibraryLoan        @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  content          String
+  operatorId       Int?
+  operator         User?                   @relation(fields: [operatorId], references: [id])
+  createdAt        DateTime                @default(now())
+
+  @@index([loanId])
 }

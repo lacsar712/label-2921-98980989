@@ -148,3 +148,59 @@ export const purchaseRequestReviewSchema = z.object({
   status: z.enum(['APPROVED', 'REJECTED', 'PURCHASED']),
   reviewNote: z.string().optional(),
 });
+
+export const interLibraryLoanDirectionEnum = z.enum(['BORROW_IN', 'LEND_OUT']);
+export const interLibraryLoanStatusEnum = z.enum([
+  'PENDING', 'SHIPPED', 'IN_TRANSIT', 'IN_USE', 'RETURNED', 'REJECTED'
+]);
+export const feePayerEnum = z.enum(['OUR_LIBRARY', 'OTHER_LIBRARY', 'SPLIT']);
+
+export const interLibraryLoanSchema = z.object({
+  bookTitle: z.string().min(1, '书名必填'),
+  isbn: z.string().min(1, 'ISBN必填'),
+  volumeCount: z.number().int().min(1, '册数至少为1').default(1),
+  partnerLibraryName: z.string().min(1, '对方馆名必填'),
+  contactPerson: z.string().min(1, '联系人必填'),
+  contactPhone: z.string().optional(),
+  trackingNumber: z.string().optional(),
+  lendDate: z.string().optional(),
+  dueDate: z.string().optional(),
+  feePayer: feePayerEnum.default('OUR_LIBRARY'),
+  direction: interLibraryLoanDirectionEnum,
+  remarks: z.string().optional(),
+  rejectionReason: z.string().optional(),
+});
+
+export const interLibraryLoanUpdateSchema = interLibraryLoanSchema.partial();
+
+export const interLibraryLoanStatusUpdateSchema = z.object({
+  status: interLibraryLoanStatusEnum,
+  note: z.string().optional(),
+  rejectionReason: z.string().optional(),
+  trackingNumber: z.string().optional(),
+  lendDate: z.string().optional(),
+  dueDate: z.string().optional(),
+  actualReturnDate: z.string().optional(),
+});
+
+export const interLibraryLoanReminderSchema = z.object({
+  content: z.string().min(1, '催还内容必填'),
+});
+
+export const interLibraryLoanExtensionSchema = z.object({
+  newDueDate: z.string().min(1, '新应还日期必填'),
+  reason: z.string().min(1, '延期理由必填'),
+});
+
+export const interLibraryLoanExtensionReviewSchema = z.object({
+  status: z.enum(['APPROVED', 'REJECTED']),
+  reviewNote: z.string().optional(),
+});
+
+export const interLibraryLoanFilterSchema = z.object({
+  direction: interLibraryLoanDirectionEnum.optional(),
+  status: interLibraryLoanStatusEnum.optional(),
+  partnerLibraryName: z.string().optional(),
+  keyword: z.string().optional(),
+  isOverdue: z.coerce.boolean().optional(),
+});
