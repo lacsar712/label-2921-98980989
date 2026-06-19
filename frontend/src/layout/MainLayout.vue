@@ -51,6 +51,10 @@
           <el-icon><Reading /></el-icon>
           <span>当前借阅</span>
         </el-menu-item>
+        <el-menu-item index="/compensations">
+          <el-icon><Wallet /></el-icon>
+          <span>丢书赔偿</span>
+        </el-menu-item>
         <el-menu-item index="/schedule">
           <el-icon><Clock /></el-icon>
           <span>馆员排班</span>
@@ -169,7 +173,8 @@ import {
   DataAnalysis,
   List,
   ShoppingCart,
-  Connection
+  Connection,
+  Wallet
 } from '@element-plus/icons-vue';
 
 const route = useRoute();
@@ -188,6 +193,7 @@ const currentRouteName = computed(() => {
     '/borrowers': '借阅用户',
     '/borrows': '借阅历史',
     '/current-borrows': '当前借阅',
+    '/compensations': '丢书赔偿',
     '/schedule': '馆员排班',
     '/shift-swaps': '换班请求',
     '/recommendations': '智能荐书',

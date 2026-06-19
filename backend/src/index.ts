@@ -22,6 +22,7 @@ import kioskRoutes from './routes/kiosk';
 import messageRoutes from './routes/messages';
 import seriesRoutes from './routes/series';
 import interLibraryLoanRoutes from './routes/interlibrary-loans';
+import compensationRoutes from './routes/compensations';
 import logger from './utils/logger';
 import { exec } from 'child_process';
 
@@ -57,6 +58,7 @@ app.use('/kiosk', kioskRoutes);
 app.use('/messages', messageRoutes);
 app.use('/series', seriesRoutes);
 app.use('/interlibrary-loans', interLibraryLoanRoutes);
+app.use('/compensations', compensationRoutes);
 
 // Error Handling
 app.use((err: any, req: Request, res: Response, _next: NextFunction) => {

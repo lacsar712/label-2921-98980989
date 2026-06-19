@@ -586,3 +586,79 @@ export const STATUS_FLOW: { status: InterLibraryLoanStatus; label: string; from?
   { status: 'REJECTED', label: '已拒收', from: ['PENDING', 'SHIPPED', 'IN_TRANSIT'] },
 ];
 
+export type CompensationLossType = 'LOST' | 'DAMAGED' | 'STOLEN';
+export type CompensationStatus = 'PENDING' | 'INSTALLMENT' | 'SETTLED' | 'WAIVED';
+export type PaymentMethod = 'CASH' | 'WECHAT' | 'ALIPAY' | 'BANK_TRANSFER' | 'OTHER';
+
+export interface Compensation {
+  id: number;
+  borrowRecordId: number;
+  borrowRecord: BorrowRecord;
+  bookId: number;
+  book: Book;
+  borrowerId: number;
+  borrower: { id: number; name: string; phone?: string; email?: string };
+  lossType: CompensationLossType;
+  status: CompensationStatus;
+  bookPrice: number;
+  multiplier: number;
+  depreciationRate: number;
+  calculatedAmount: number;
+  adjustedAmount?: number;
+  paidAmount: number;
+  paymentMethod?: PaymentMethod;
+  handlerId?: number;
+  handler?: { id: number; username: string };
+  note?: string;
+  settledAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const LOSS_TYPE_LABELS: Record<CompensationLossType, string> = {
+  LOST: '丢失',
+  DAMAGED: '污损报废',
+  STOLEN: '被盗',
+};
+
+export const LOSS_TYPE_COLORS: Record<CompensationLossType, string> = {
+  LOST: '#f56c6c',
+  DAMAGED: '#e6a23c',
+  STOLEN: '#909399',
+};
+
+export const LOSS_TYPE_TAGS: Record<CompensationLossType, 'danger' | 'warning' | 'info'> = {
+  LOST: 'danger',
+  DAMAGED: 'warning',
+  STOLEN: 'info',
+};
+
+export const COMP_STATUS_LABELS: Record<CompensationStatus, string> = {
+  PENDING: '待赔偿',
+  INSTALLMENT: '分期赔付',
+  SETTLED: '已结清',
+  WAIVED: '豁免',
+};
+
+export const COMP_STATUS_TAGS: Record<CompensationStatus, 'warning' | 'primary' | 'success' | 'info'> = {
+  PENDING: 'warning',
+  INSTALLMENT: 'primary',
+  SETTLED: 'success',
+  WAIVED: 'info',
+};
+
+export const COMP_STATUS_COLORS: Record<CompensationStatus, string> = {
+  PENDING: '#e6a23c',
+  INSTALLMENT: '#409eff',
+  SETTLED: '#67c23a',
+  WAIVED: '#909399',
+};
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  CASH: '现金',
+  WECHAT: '微信',
+  ALIPAY: '支付宝',
+  BANK_TRANSFER: '银行转账',
+  OTHER: '其他',
+};
+

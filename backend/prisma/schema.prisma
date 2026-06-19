@@ -86,6 +86,27 @@ enum FeePayer {
   SPLIT
 }
 
+enum CompensationLossType {
+  LOST
+  DAMAGED
+  STOLEN
+}
+
+enum CompensationStatus {
+  PENDING
+  INSTALLMENT
+  SETTLED
+  WAIVED
+}
+
+enum PaymentMethod {
+  CASH
+  WECHAT
+  ALIPAY
+  BANK_TRANSFER
+  OTHER
+}
+
 model User {
   id              Int               @id @default(autoincrement())
   username        String            @unique
@@ -100,6 +121,7 @@ model User {
   receivedReceipts MessageReceipt[] @relation("MessageReceipts")
   purchaseRequests PurchaseRequest[] @relation("RequestedBy")
   reviewedPurchases PurchaseRequest[] @relation("ReviewedBy")
+  handledCompensations Compensation[] @relation("CompensationHandler")
 }
 
 model Message {
@@ -195,6 +217,7 @@ model Borrower {
   borrows   BorrowRecord[]
   ratings   BookRating[]
   reservations Reservation[]
+  compensations Compensation[]
 }
 
 model Category {
@@ -221,17 +244,48 @@ model Book {
   ratings     BookRating[]
   reservations Reservation[]
   seriesVolume SeriesVolume?
+  compensations Compensation[]
 }
 
 model BorrowRecord {
-  id         Int       @id @default(autoincrement())
-  bookId     Int
-  book       Book      @relation(fields: [bookId], references: [id])
-  borrowerId Int
-  borrower   Borrower  @relation(fields: [borrowerId], references: [id])
-  borrowDate DateTime  @default(now())
-  returnDate DateTime?
-  status     String    @default("BORROWED") // BORROWED, RETURNED
+  id            Int           @id @default(autoincrement())
+  bookId        Int
+  book          Book          @relation(fields: [bookId], references: [id])
+  borrowerId    Int
+  borrower      Borrower      @relation(fields: [borrowerId], references: [id])
+  borrowDate    DateTime      @default(now())
+  returnDate    DateTime?
+  status        String        @default("BORROWED")
+  compensation  Compensation?
+}
+
+model Compensation {
+  id                Int                 @id @default(autoincrement())
+  borrowRecordId    Int                 @unique
+  borrowRecord      BorrowRecord        @relation(fields: [borrowRecordId], references: [id])
+  bookId            Int
+  book              Book                @relation(fields: [bookId], references: [id])
+  borrowerId        Int
+  borrower          Borrower            @relation(fields: [borrowerId], references: [id])
+  lossType          CompensationLossType
+  status            CompensationStatus  @default(PENDING)
+  bookPrice         Float
+  multiplier        Float               @default(2.0)
+  depreciationRate  Float               @default(0.0)
+  calculatedAmount  Float
+  adjustedAmount    Float?
+  paidAmount        Float               @default(0.0)
+  paymentMethod     PaymentMethod?
+  handlerId         Int?
+  handler           User?               @relation("CompensationHandler", fields: [handlerId], references: [id])
+  note              String?
+  settledAt         DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([status])
+  @@index([borrowerId])
+  @@index([bookId])
 }
 
 model BookRating {

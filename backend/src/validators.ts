@@ -204,3 +204,37 @@ export const interLibraryLoanFilterSchema = z.object({
   keyword: z.string().optional(),
   isOverdue: z.coerce.boolean().optional(),
 });
+
+export const compensationLossTypeEnum = z.enum(['LOST', 'DAMAGED', 'STOLEN']);
+export const compensationStatusEnum = z.enum(['PENDING', 'INSTALLMENT', 'SETTLED', 'WAIVED']);
+export const paymentMethodEnum = z.enum(['CASH', 'WECHAT', 'ALIPAY', 'BANK_TRANSFER', 'OTHER']);
+
+export const createCompensationSchema = z.object({
+  borrowRecordId: z.number().int(),
+  lossType: compensationLossTypeEnum,
+  multiplier: z.number().min(0.1).default(2.0),
+  depreciationRate: z.number().min(0).max(1).default(0.0),
+  adjustedAmount: z.number().min(0).optional(),
+  note: z.string().optional(),
+});
+
+export const updateCompensationSchema = z.object({
+  multiplier: z.number().min(0.1).optional(),
+  depreciationRate: z.number().min(0).max(1).optional(),
+  adjustedAmount: z.number().min(0).optional(),
+  note: z.string().optional(),
+});
+
+export const compensationStatusUpdateSchema = z.object({
+  status: compensationStatusEnum,
+  paymentMethod: paymentMethodEnum.optional(),
+  paidAmount: z.number().min(0).optional(),
+  note: z.string().optional(),
+});
+
+export const compensationFilterSchema = z.object({
+  status: compensationStatusEnum.optional(),
+  lossType: compensationLossTypeEnum.optional(),
+  borrowerId: z.coerce.number().int().optional(),
+  keyword: z.string().optional(),
+});

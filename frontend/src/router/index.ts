@@ -107,6 +107,11 @@ const router = createRouter({
           name: 'InterLibraryLoanDetail',
           component: () => import('../views/InterLibraryLoanDetail.vue'),
         },
+        {
+          path: 'compensations',
+          name: 'Compensations',
+          component: () => import('../views/Compensations.vue'),
+        },
 
       ],
     },
