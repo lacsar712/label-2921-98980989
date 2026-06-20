@@ -41,7 +41,11 @@ instance.interceptors.response.use(
   (response) => response.data,
   (error) => {
     const message = error.response?.data?.message || 'Network Error';
-    ElMessage.error(message);
+    const requestId =
+      error.response?.data?.requestId ||
+      error.response?.headers?.['x-request-id'];
+    const errorMessage = requestId ? `${message} (RequestId: ${requestId})` : message;
+    ElMessage.error(errorMessage);
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';

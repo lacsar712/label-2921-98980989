@@ -27,11 +27,13 @@ import procurementRoutes from './routes/procurements';
 import activityRoutes from './routes/activities';
 import logger from './utils/logger';
 import { exec } from 'child_process';
+import { requestIdMiddleware } from './middleware/request-id';
 
 const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(cors());
+app.use(requestIdMiddleware);
 app.use(express.json());
 app.use(
   morgan('combined', {
@@ -69,6 +71,7 @@ app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
   logger.error({ err }, 'Unhandled error');
   res.status(err.status || 500).json({
     message: err.message || 'Internal Server Error',
+    requestId: req.requestId,
   });
 });
 
