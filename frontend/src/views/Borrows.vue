@@ -87,49 +87,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import api from '../api';
-import { ElMessage } from 'element-plus';
 import { Search } from '@element-plus/icons-vue';
+import { useBorrowList } from '../composables/useBorrowList';
 
-const borrows = ref<any[]>([]);
-const loading = ref(false);
-const searchQuery = ref('');
-
-const filteredBorrows = computed(() => {
-  if (!searchQuery.value) return borrows.value;
-  const query = searchQuery.value.toLowerCase();
-  return borrows.value.filter(item => 
-    item.book?.title?.toLowerCase().includes(query) ||
-    item.borrower?.name?.toLowerCase().includes(query)
-  );
+const {
+  loading,
+  searchQuery,
+  filteredBorrows,
+  handleReturn
+} = useBorrowList({
+  fetchEndpoint: '/borrows',
+  searchFields: ['book.title', 'borrower.name'],
+  confirmReturn: false
 });
-
-const fetchBorrows = async () => {
-  loading.value = true;
-  try {
-    const res: any = await api.get('/borrows');
-    borrows.value = res;
-  } finally {
-    loading.value = false;
-  }
-};
-
-const handleReturn = async (row: any) => {
-  try {
-    await api.post(`/borrows/${row.id}/return`);
-    ElMessage.success('归还成功');
-    fetchBorrows();
-  } catch (error) {
-    ElMessage.error('归还失败');
-  }
-};
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleString();
 };
-
-onMounted(fetchBorrows);
 </script>
 
 <style scoped lang="scss">

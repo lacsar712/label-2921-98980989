@@ -6,12 +6,11 @@
           <h3>当前借阅信息</h3>
           <div class="search-box">
             <el-input
-              v-model="searchKeyword"
+              v-model="searchQuery"
               placeholder="搜索书名、作者、借阅人"
               :prefix-icon="Search"
               clearable
               style="width: 250px; margin-right: 12px"
-              @input="handleSearch"
             />
             <el-select
               v-model="selectedCategory"
@@ -207,49 +206,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ref, onMounted } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import api from '../api';
+import { useBorrowList } from '../composables/useBorrowList';
 
-const borrows = ref<any[]>([]);
 const categories = ref<any[]>([]);
-const loading = ref(false);
-const searchKeyword = ref('');
 const selectedCategory = ref('');
 const detailDialogVisible = ref(false);
 const selectedBorrow = ref<any>(null);
 
-const filteredBorrows = computed(() => {
-  let result = borrows.value;
-
-  // 搜索过滤
-  if (searchKeyword.value) {
-    const keyword = searchKeyword.value.toLowerCase();
-    result = result.filter((item) =>
-      item.book.title.toLowerCase().includes(keyword) ||
-      item.book.author.toLowerCase().includes(keyword) ||
-      item.borrower.name.toLowerCase().includes(keyword)
-    );
-  }
-
-  // 分类过滤
-  if (selectedCategory.value) {
-    result = result.filter((item) => item.book.category.name === selectedCategory.value);
-  }
-
-  return result;
-});
-
-const fetchCurrentBorrows = async () => {
-  loading.value = true;
-  try {
-    const res: any = await api.get('/borrows/current');
-    borrows.value = res;
-  } finally {
-    loading.value = false;
-  }
+const extraFilter = (item: any) => {
+  if (!selectedCategory.value) return true;
+  return item.book.category.name === selectedCategory.value;
 };
+
+const {
+  loading,
+  searchQuery,
+  filteredBorrows,
+  fetchBorrows,
+  handleReturn,
+  formatDate
+} = useBorrowList({
+  fetchEndpoint: '/borrows/current',
+  searchFields: ['book.title', 'book.author', 'borrower.name'],
+  confirmReturn: true,
+  extraFilter
+});
 
 const fetchCategories = async () => {
   try {
@@ -260,45 +244,7 @@ const fetchCategories = async () => {
   }
 };
 
-const handleReturn = async (row: any) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要归还《${row.book.title}》吗？`,
-      '确认归还',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    );
-
-    await api.post(`/borrows/${row.id}/return`);
-    ElMessage.success('归还成功');
-    fetchCurrentBorrows();
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('归还失败');
-    }
-  }
-};
-
-const handleSearch = () => {
-  // 搜索逻辑通过 computed 自动处理
-};
-
 const handleFilter = () => {
-  // 筛选逻辑通过 computed 自动处理
-};
-
-const formatDate = (dateStr: string) => {
-  const date = new Date(dateStr);
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
 };
 
 const getBorrowDays = (borrowDate: string) => {
@@ -315,7 +261,6 @@ const getDaysTagType = (days: number) => {
 };
 
 onMounted(() => {
-  fetchCurrentBorrows();
   fetchCategories();
 });
 </script>
