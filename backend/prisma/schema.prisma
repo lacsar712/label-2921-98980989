@@ -174,10 +174,10 @@ model User {
   stockInArrivals ArrivalRecordItem[] @relation("StockInOperator")
   operatedReturns ReturnRecord[] @relation("ReturnOperator")
   createdActivities Activity[]
-  createdInterLibraryLoans InterLibraryLoan[] @relation("ILLCreator")
-  interLibraryLoanTimelines InterLibraryLoanTimeline[] @relation("ILLTimelineOperator")
-  approvedILLExtensions InterLibraryLoanExtension[] @relation("ILLExtensionApprover")
-  interLibraryLoanReminders InterLibraryLoanReminder[] @relation("ILLReminderOperator")
+  createdInterLibraryLoans InterLibraryLoan[] @relation("InterLibraryLoanCreator")
+  interLibraryLoanTimelineOps InterLibraryLoanTimeline[] @relation("InterLibraryLoanTimelineOperator")
+  approvedInterLibraryLoanExtensions InterLibraryLoanExtension[] @relation("InterLibraryLoanExtensionApprover")
+  interLibraryLoanReminderOps InterLibraryLoanReminder[] @relation("InterLibraryLoanReminderOperator")
 }
 
 model Message {
@@ -448,7 +448,7 @@ model InterLibraryLoan {
   remarks            String?
   rejectionReason    String?
   createdById        Int?
-  createdBy          User?                     @relation("ILLCreator", fields: [createdById], references: [id])
+  createdBy          User?                     @relation("InterLibraryLoanCreator", fields: [createdById], references: [id])
   timelines          InterLibraryLoanTimeline[]
   extensions         InterLibraryLoanExtension[]
   reminders          InterLibraryLoanReminder[]
@@ -467,7 +467,7 @@ model InterLibraryLoanTimeline {
   status           InterLibraryLoanStatus?
   action           String
   operatorId       Int?
-  operator         User?                   @relation("ILLTimelineOperator", fields: [operatorId], references: [id])
+  operator         User?                   @relation("InterLibraryLoanTimelineOperator", fields: [operatorId], references: [id])
   note             String?
   timestamp        DateTime                @default(now())
 
@@ -482,7 +482,7 @@ model InterLibraryLoanExtension {
   newDueDate       DateTime
   reason           String
   approvedById     Int?
-  approvedBy       User?                   @relation("ILLExtensionApprover", fields: [approvedById], references: [id])
+  approvedBy       User?                   @relation("InterLibraryLoanExtensionApprover", fields: [approvedById], references: [id])
   status           String                  @default("PENDING")
   approvedAt       DateTime?
   createdAt        DateTime                @default(now())
@@ -496,7 +496,7 @@ model InterLibraryLoanReminder {
   loan             InterLibraryLoan        @relation(fields: [loanId], references: [id], onDelete: Cascade)
   content          String
   operatorId       Int?
-  operator         User?                   @relation("ILLReminderOperator", fields: [operatorId], references: [id])
+  operator         User?                   @relation("InterLibraryLoanReminderOperator", fields: [operatorId], references: [id])
   createdAt        DateTime                @default(now())
 
   @@index([loanId])
